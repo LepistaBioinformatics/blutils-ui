@@ -1,3 +1,4 @@
+import { Tooltip } from "flowbite-react";
 import { kebabToPlain } from "../../../../functions/kebab-to-plain";
 
 interface Props {
@@ -14,12 +15,15 @@ export function TaxonomyCell({ taxonomy }: Props) {
           return (
             <div
               key={index}
-              className="mr-2 pl-2 flex flex-col border-l border-l-gray-400"
+              className="pl-2 my-0 py-0  text-gray-400 dark:text-gray-600"
             >
-              <span>{kebabToPlain(splittted.at(1) as string)}</span>
-              <span className="text-gray-400 mr-2 uppercase text-xs">
-                {translateRank(splittted.at(0) as string)}
-              </span>
+              <Tooltip
+                content={translateRank(splittted.at(0) as string).toUpperCase()}
+                placement="bottom"
+              >
+                <span className="mr-2">{">"}</span>
+                {kebabToPlain(splittted.at(1) as string)}
+              </Tooltip>
             </div>
           );
         }

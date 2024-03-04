@@ -1,6 +1,6 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { BlutilsResult } from "../../../../types/BlutilsResult";
-import { FileInput, Button, Label } from "flowbite-react";
+import { FileInput, Button } from "flowbite-react";
 
 interface IFormInput {
   content: FileList;
@@ -28,16 +28,20 @@ export function ResultUpload({ resultSetter }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="mb-2 block">
-        <Label htmlFor="file" value="Upload file" />
-      </div>
-      <FileInput
-        id="file"
-        helperText="The Blutils result file"
-        {...register("content")}
-      />
-      <Button type="submit">Submit</Button>
-    </form>
+    <div className="dark:text-gray-300 m-auto max-w-lg border p-5 my-32 rounded-xl">
+      <h1 className="text-3xl text-center font-bold mt-6 mb-12">
+        Results Explorer
+      </h1>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex justify-around gap-3 my-5 border-t-2 border-t-gray-500 pt-5"
+      >
+        <FileInput id="file" {...register("content")} className="w-full" />
+        <Button type="submit">Submit</Button>
+      </form>
+      <p className="max-w-sm">
+        Use this field to load the JSON field containing the Blutils results
+      </p>
+    </div>
   );
 }

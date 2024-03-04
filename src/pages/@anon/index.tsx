@@ -3,8 +3,18 @@ import { Navbar } from "flowbite-react";
 
 function Layout() {
   return (
-    <main className="dark:bg-gray-900">
-      <Navbar />
+    <main>
+      <Navbar fluid rounded>
+        <Navbar.Toggle />
+        <Navbar.Collapse>
+          <Navbar.Link
+            href="https://github.com/LepistaBioinformatics/blutils"
+            active
+          >
+            Github
+          </Navbar.Link>
+        </Navbar.Collapse>
+      </Navbar>
       <Results />
     </main>
   );

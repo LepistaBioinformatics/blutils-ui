@@ -4,8 +4,12 @@ import { ResultUpload } from "./elements/ResultUpload";
 import { Button, Pagination, Table, Tooltip } from "flowbite-react";
 import { kebabToPlain } from "../../../functions/kebab-to-plain";
 import { TaxonomyCell } from "./elements/TaxonomyCell";
-import { kebabToSciname } from "../../../functions/kebab-to-scientific-name";
+import {
+  kebabToSciname,
+  kebabToScinameString,
+} from "../../../functions/kebab-to-scientific-name";
 import { SEQUENCIAL_COLORS } from "../../../constants/sequencial-colors";
+import { FaPlus } from "react-icons/fa";
 
 export function Results() {
   const [result, setResult] = useState<BlutilsResult | null>(null);
@@ -36,8 +40,8 @@ export function Results() {
   };
 
   return (
-    <div className="m-6 max-w-screen  min-h-screen">
-      <div className="">
+    <div className="max-w-screen min-h-screen">
+      <div className="m-6 ">
         {currentRecords ? (
           <>
             <div className="my-5 flex gap-8 justify-between">
@@ -67,7 +71,7 @@ export function Results() {
 
             <div className="overflow-auto text-gray-900 dark:text-white">
               {currentRecords && (
-                <Table hoverable>
+                <Table>
                   <Table.Head>
                     <Table.HeadCell className="whitespace-nowrap">
                       Query
@@ -87,11 +91,8 @@ export function Results() {
                     <Table.HeadCell className="whitespace-nowrap">
                       Composition
                     </Table.HeadCell>
-                    <Table.HeadCell className="whitespace-nowrap">
-                      Taxonomy
-                    </Table.HeadCell>
                   </Table.Head>
-                  <Table.Body className="divide-y">
+                  <Table.Body className="">
                     {currentRecords.map((res, index) => {
                       const occurrences =
                         res.taxon?.consensusBeans.reduce(
@@ -99,66 +100,97 @@ export function Results() {
                           0
                         ) || 0;
 
+                      const largetThanFive =
+                        res?.taxon?.consensusBeans &&
+                        res?.taxon?.consensusBeans.length > 2;
+
+                      let showChildren = false;
+
                       return (
-                        <Table.Row
-                          key={index}
-                          className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                        >
-                          <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                            {res.query}
-                          </Table.Cell>
-                          {res.taxon && (
-                            <Fragment>
-                              <Table.Cell className="whitespace-nowrap text-gray-900 dark:text-white">
-                                {kebabToSciname(
-                                  res.taxon.identifier,
-                                  res.taxon.reachedRank
-                                )}
-                              </Table.Cell>
-                              <Table.Cell>
-                                {kebabToPlain(res.taxon.reachedRank)}
-                              </Table.Cell>
-                              <Table.Cell>
-                                {res.taxon.percIdentity.toFixed(1)}
-                              </Table.Cell>
-                              <Table.Cell>{res.taxon.bitScore}</Table.Cell>
-                              <Table.Cell>
-                                <div className="w-[150px] flex">
-                                  {res.taxon.consensusBeans.map(
-                                    (item, index) => (
-                                      <Tooltip
-                                        content={kebabToSciname(
-                                          item.identifier,
-                                          item.rank
-                                        )}
-                                      >
-                                        <div
-                                          key={index}
-                                          className="text-xs border border-gray-300 dark:border-gray-700 h-4"
-                                          style={{
-                                            width:
-                                              (item.occurrences / occurrences) *
-                                                100 +
-                                              "px",
-                                            backgroundColor:
-                                              SEQUENCIAL_COLORS.at(
-                                                index
-                                              ) as string,
-                                          }}
-                                        >
-                                          &nbsp;
-                                        </div>
-                                      </Tooltip>
-                                    )
+                        <Fragment key={index}>
+                          <Table.Row className="bg-white border-t dark:border-t-gray-700 dark:bg-gray-800 hover:bg-gray-600 border-b-none">
+                            <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white pt-4 pb-3">
+                              {res.query}
+                            </Table.Cell>
+                            {res.taxon && (
+                              <Fragment>
+                                <Table.Cell className="whitespace-nowrap text-gray-900 dark:text-white py-1">
+                                  {kebabToSciname(
+                                    res.taxon.identifier,
+                                    res.taxon.reachedRank
                                   )}
-                                </div>
+                                </Table.Cell>
+                                <Table.Cell className="py-1">
+                                  {kebabToPlain(res.taxon.reachedRank)}
+                                </Table.Cell>
+                                <Table.Cell className="py-1">
+                                  {res.taxon.percIdentity.toFixed(1)}
+                                </Table.Cell>
+                                <Table.Cell className="py-1">
+                                  {res.taxon.bitScore}
+                                </Table.Cell>
+                                <Table.Cell className="py-1">
+                                  <div className="w-[150px] flex  whitespace-nowrap">
+                                    {res.taxon.consensusBeans
+                                      .slice(0, 5)
+                                      .map((item, index) => (
+                                        <Tooltip
+                                          content={`${kebabToScinameString(
+                                            item.identifier,
+                                            item.rank
+                                          )} x${item.occurrences}`}
+                                        >
+                                          <div
+                                            key={index}
+                                            className={`border border-gray-300 dark:border-gray-700 rounded-md h-5`}
+                                            style={{
+                                              width:
+                                                (item.occurrences /
+                                                  occurrences) *
+                                                  100 +
+                                                "px",
+                                              backgroundColor:
+                                                SEQUENCIAL_COLORS.at(
+                                                  index
+                                                ) as string,
+                                            }}
+                                          >
+                                            &nbsp;
+                                          </div>
+                                        </Tooltip>
+                                      ))}
+                                    {largetThanFive === true && (
+                                      <FaPlus
+                                        className="mt-1 ml-1"
+                                        onClick={() =>
+                                          (showChildren = !showChildren)
+                                        }
+                                      />
+                                    )}
+                                  </div>
+                                </Table.Cell>
+                              </Fragment>
+                            )}
+                          </Table.Row>
+                          {res?.taxon?.taxonomy && (
+                            <Table.Row className="bg-white dark:bg-gray-800 border-t-none">
+                              <Table.Cell
+                                colSpan={7}
+                                className="whitespace-nowrap py-1 px-2"
+                              >
+                                <TaxonomyCell taxonomy={res?.taxon?.taxonomy} />
                               </Table.Cell>
-                              <Table.Cell className="whitespace-nowrap">
-                                <TaxonomyCell taxonomy={res.taxon.taxonomy} />
-                              </Table.Cell>
-                            </Fragment>
+                            </Table.Row>
                           )}
-                        </Table.Row>
+                          {showChildren &&
+                            res?.taxon?.consensusBeans.map((item, index) => (
+                              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                                <Table.Cell colSpan={7}>
+                                  {kebabToSciname(item.identifier, item.rank)}
+                                </Table.Cell>
+                              </Table.Row>
+                            ))}
+                        </Fragment>
                       );
                     })}
                   </Table.Body>

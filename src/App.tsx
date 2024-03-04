@@ -1,12 +1,10 @@
-import React from "react";
 import "react-virtualized/styles.css";
 import "./App.css";
 import { Anonymous } from "./pages";
 
 function App() {
   return (
-    <div className="">
-      <header className="">Blutils UI</header>
+    <div className="dark:bg-gray-900">
       <Anonymous />
     </div>
   );
