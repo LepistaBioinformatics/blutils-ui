@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/LepistaBioinformatics/blutils-ui/static/css/main.eb19d7b8.css",
+    "main.js": "/LepistaBioinformatics/blutils-ui/static/js/main.403758b3.js",
+    "static/js/453.6cb89f7d.chunk.js": "/LepistaBioinformatics/blutils-ui/static/js/453.6cb89f7d.chunk.js",
+    "index.html": "/LepistaBioinformatics/blutils-ui/index.html",
+    "main.eb19d7b8.css.map": "/LepistaBioinformatics/blutils-ui/static/css/main.eb19d7b8.css.map",
+    "main.403758b3.js.map": "/LepistaBioinformatics/blutils-ui/static/js/main.403758b3.js.map",
+    "453.6cb89f7d.chunk.js.map": "/LepistaBioinformatics/blutils-ui/static/js/453.6cb89f7d.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.eb19d7b8.css",
+    "static/js/main.403758b3.js"
+  ]
+}
