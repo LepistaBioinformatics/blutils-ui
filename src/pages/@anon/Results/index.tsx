@@ -100,9 +100,10 @@ export function Results() {
                           0
                         ) || 0;
 
+                      const chunkSize = 5;
                       const largetThanFive =
                         res?.taxon?.consensusBeans &&
-                        res?.taxon?.consensusBeans.length > 2;
+                        res?.taxon?.consensusBeans.length > chunkSize;
 
                       let showChildren = false;
 
@@ -132,7 +133,7 @@ export function Results() {
                                 <Table.Cell className="py-1">
                                   <div className="w-[150px] flex  whitespace-nowrap">
                                     {res.taxon.consensusBeans
-                                      .slice(0, 5)
+                                      .slice(0, chunkSize)
                                       .map((item, index) => (
                                         <Tooltip
                                           content={`${kebabToScinameString(
