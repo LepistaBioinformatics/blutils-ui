@@ -3,11 +3,12 @@ import { kebabToPlain } from "../../../../functions/kebab-to-plain";
 
 interface Props {
   taxonomy: string;
+  className?: string;
 }
 
-export function TaxonomyCell({ taxonomy }: Props) {
+export function TaxonomyCell({ taxonomy, className }: Props) {
   return (
-    <div className="flex">
+    <div className={"flex " + className}>
       {taxonomy.split(";").map((bit, index) => {
         const splittted = bit.split("__");
 

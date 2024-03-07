@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from "react";
-import { BlutilsResult } from "../../../types/BlutilsResult";
+import { BlutilsResult, Result } from "../../../types/BlutilsResult";
 import { ResultUpload } from "./elements/ResultUpload";
 import { Button, Pagination, Table, Tooltip } from "flowbite-react";
 import { kebabToPlain } from "../../../functions/kebab-to-plain";
@@ -9,7 +9,7 @@ import {
   kebabToScinameString,
 } from "../../../functions/kebab-to-scientific-name";
 import { SEQUENCIAL_COLORS } from "../../../constants/sequencial-colors";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa6";
 
 export function Results() {
   const [result, setResult] = useState<BlutilsResult | null>(null);
@@ -59,17 +59,24 @@ export function Results() {
             </div>
 
             <div>
-              <table className="text-gray-500 text-sm">
+              <table className="text-gray-400 dark:text-gray-600 text-sm">
                 <tbody>
-                  <tr>
+                  <tr className="flex gap-2">
                     <td>Number of queries</td>
-                    <td>{result?.results.length}</td>
+                    <td className="text-gray-500 font-bold">
+                      {result?.results.length}
+                    </td>
+                    <td>from</td>
+                    <td className="text-gray-500 font-bold">
+                      {paginateResults.length}
+                    </td>
+                    <td>pages</td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            <div className="overflow-auto text-gray-900 dark:text-white">
+            <div className="overflow-auto text-gray-900 dark:text-gray-100">
               {currentRecords && (
                 <Table>
                   <Table.Head>
@@ -93,107 +100,9 @@ export function Results() {
                     </Table.HeadCell>
                   </Table.Head>
                   <Table.Body className="">
-                    {currentRecords.map((res, index) => {
-                      const occurrences =
-                        res.taxon?.consensusBeans.reduce(
-                          (acc, item) => acc + item.occurrences,
-                          0
-                        ) || 0;
-
-                      const chunkSize = 5;
-                      const largetThanFive =
-                        res?.taxon?.consensusBeans &&
-                        res?.taxon?.consensusBeans.length > chunkSize;
-
-                      let showChildren = false;
-
-                      return (
-                        <Fragment key={index}>
-                          <Table.Row className="bg-white border-t dark:border-t-gray-700 dark:bg-gray-800 hover:bg-gray-600 border-b-none">
-                            <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white pt-4 pb-3">
-                              {res.query}
-                            </Table.Cell>
-                            {res.taxon && (
-                              <Fragment>
-                                <Table.Cell className="whitespace-nowrap text-gray-900 dark:text-white py-1">
-                                  {kebabToSciname(
-                                    res.taxon.identifier,
-                                    res.taxon.reachedRank
-                                  )}
-                                </Table.Cell>
-                                <Table.Cell className="py-1">
-                                  {kebabToPlain(res.taxon.reachedRank)}
-                                </Table.Cell>
-                                <Table.Cell className="py-1">
-                                  {res.taxon.percIdentity.toFixed(1)}
-                                </Table.Cell>
-                                <Table.Cell className="py-1">
-                                  {res.taxon.bitScore}
-                                </Table.Cell>
-                                <Table.Cell className="py-1">
-                                  <div className="w-[150px] flex  whitespace-nowrap">
-                                    {res.taxon.consensusBeans
-                                      .slice(0, chunkSize)
-                                      .map((item, index) => (
-                                        <Tooltip
-                                          content={`${kebabToScinameString(
-                                            item.identifier,
-                                            item.rank
-                                          )} x${item.occurrences}`}
-                                        >
-                                          <div
-                                            key={index}
-                                            className={`border border-gray-300 dark:border-gray-700 rounded-md h-5`}
-                                            style={{
-                                              width:
-                                                (item.occurrences /
-                                                  occurrences) *
-                                                  100 +
-                                                "px",
-                                              backgroundColor:
-                                                SEQUENCIAL_COLORS.at(
-                                                  index
-                                                ) as string,
-                                            }}
-                                          >
-                                            &nbsp;
-                                          </div>
-                                        </Tooltip>
-                                      ))}
-                                    {largetThanFive === true && (
-                                      <FaPlus
-                                        className="mt-1 ml-1"
-                                        onClick={() =>
-                                          (showChildren = !showChildren)
-                                        }
-                                      />
-                                    )}
-                                  </div>
-                                </Table.Cell>
-                              </Fragment>
-                            )}
-                          </Table.Row>
-                          {res?.taxon?.taxonomy && (
-                            <Table.Row className="bg-white dark:bg-gray-800 border-t-none">
-                              <Table.Cell
-                                colSpan={7}
-                                className="whitespace-nowrap py-1 px-2"
-                              >
-                                <TaxonomyCell taxonomy={res?.taxon?.taxonomy} />
-                              </Table.Cell>
-                            </Table.Row>
-                          )}
-                          {showChildren &&
-                            res?.taxon?.consensusBeans.map((item, index) => (
-                              <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                                <Table.Cell colSpan={7}>
-                                  {kebabToSciname(item.identifier, item.rank)}
-                                </Table.Cell>
-                              </Table.Row>
-                            ))}
-                        </Fragment>
-                      );
-                    })}
+                    {currentRecords.map((res, index) => (
+                      <TableRow key={index} record={res} />
+                    ))}
                   </Table.Body>
                 </Table>
               )}
@@ -204,5 +113,128 @@ export function Results() {
         )}
       </div>
     </div>
+  );
+}
+
+function TableRow({ record }: { record: Result }) {
+  const chunkSize = 5;
+
+  const occurrences = useMemo(
+    () =>
+      record.taxon?.consensusBeans.reduce(
+        (acc, item) => acc + item.occurrences,
+        0
+      ) || 0,
+    [record.taxon?.consensusBeans]
+  );
+
+  const [showChildren, setShowChildren] = useState(false);
+  return (
+    <Fragment>
+      <Table.Row
+        className="text-lg bg-white border-t dark:border-t-gray-700 dark:bg-gray-800 hover:border hover:border-gray-500 border-b-none"
+        onClick={() => setShowChildren(!showChildren)}
+      >
+        <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100 pt-4 pb-3">
+          {record.query}
+        </Table.Cell>
+        {record.taxon && (
+          <Fragment>
+            <Table.Cell className="whitespace-nowrap text-gray-900 dark:text-gray-100 py-1">
+              {kebabToSciname(
+                record.taxon.identifier,
+                record.taxon.reachedRank
+              )}
+            </Table.Cell>
+            <Table.Cell className="py-1">
+              {kebabToPlain(record.taxon.reachedRank)}
+            </Table.Cell>
+            <Table.Cell className="py-1">
+              {record.taxon.percIdentity.toFixed(1)}
+            </Table.Cell>
+            <Table.Cell className="py-1">{record.taxon.bitScore}</Table.Cell>
+            <Table.Cell className="py-1">
+              <div className="w-[150px] h-full flex whitespace-nowrap">
+                {record.taxon.consensusBeans
+                  .slice(0, chunkSize)
+                  .map((item, index) => (
+                    <Tooltip
+                      content={`${kebabToScinameString(
+                        item.identifier,
+                        item.rank
+                      )} x${item.occurrences}`}
+                    >
+                      <div
+                        key={index}
+                        className={`border border-gray-300 dark:border-gray-700 rounded-md h-5`}
+                        style={{
+                          width: (item.occurrences / occurrences) * 100 + "px",
+                          backgroundColor: SEQUENCIAL_COLORS.at(
+                            index
+                          ) as string,
+                        }}
+                      >
+                        &nbsp;
+                      </div>
+                    </Tooltip>
+                  ))}
+                {record?.taxon &&
+                  record?.taxon?.consensusBeans.length > chunkSize && (
+                    <FaPlus className="ml-1" />
+                  )}
+              </div>
+            </Table.Cell>
+          </Fragment>
+        )}
+      </Table.Row>
+      {record?.taxon?.taxonomy && (
+        <Table.Row className="bg-white dark:bg-gray-800 border-t-none">
+          <Table.Cell colSpan={7} className="whitespace-nowrap py-1 px-2">
+            <TaxonomyCell taxonomy={record?.taxon?.taxonomy} />
+          </Table.Cell>
+        </Table.Row>
+      )}
+      {showChildren && (
+        <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-700">
+          <Table.Cell colSpan={8}>
+            <div className="mx-3 my-2">
+              {record?.taxon?.consensusBeans.map((item, index) => (
+                <div
+                  key={index}
+                  className="my-5 p-4 border border-gray-500 rounded-lg shadow bg-gray-100 dark:bg-gray-800 text-gray-100"
+                >
+                  <div>
+                    <span className="text-lg">
+                      {kebabToSciname(item.identifier, item.rank)}
+                    </span>
+                    <span className="text-sm ml-3 text-gray-500">
+                      {kebabToPlain(item.rank)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500 mr-2">Occurrences:</span>
+                    {item.occurrences}
+                  </div>
+                  <div className="flex">
+                    <span className="text-gray-500 mr-2">Accessions:</span>
+                    <div className="flex">
+                      {item.accessions.map((acc, index) => (
+                        <div key={index} className="mr-3">
+                          {acc}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <TaxonomyCell
+                    taxonomy={item.taxonomy}
+                    className="-ml-2 mt-2"
+                  />
+                </div>
+              ))}
+            </div>
+          </Table.Cell>
+        </Table.Row>
+      )}
+    </Fragment>
   );
 }
