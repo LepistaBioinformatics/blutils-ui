@@ -1,7 +1,15 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { MdCopyAll } from "react-icons/md";
+import { Fragment, useMemo, useState } from "react";
 import { BlutilsResult, Result } from "../../../types/BlutilsResult";
 import { ResultUpload } from "./elements/ResultUpload";
-import { Button, Pagination, Select, Table, Tooltip } from "flowbite-react";
+import {
+  Button,
+  Modal,
+  Pagination,
+  Select,
+  Table,
+  Tooltip,
+} from "flowbite-react";
 import { kebabToPlain } from "../../../functions/kebab-to-plain";
 import { TaxonomyCell } from "./elements/TaxonomyCell";
 import {
@@ -28,12 +36,19 @@ enum ViewType {
 }
 
 export function Results() {
-  const groupedSectionHeight = 50;
+  const groupedSectionHeight = 40;
 
   const [result, setResult] = useState<BlutilsResult | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
   const [groupedBy, setGroupedBy] = useState<ViewType>(ViewType.Query);
+  const [currentQuery, setCurrentQuery] = useState<Result | undefined>(
+    undefined
+  );
+
+  const handleQueryDetails = (result: Result | undefined) => {
+    setCurrentQuery(result);
+  };
 
   const groupedResults: PaginatedResults[] = useMemo(() => {
     if (!result) return [];
@@ -88,10 +103,6 @@ export function Results() {
     return paginatedResults[paginatedResults.length - 1];
   }, [currentPage, paginatedResults]);
 
-  useEffect(() => {
-    console.log("current records", currentRecords);
-  }, [currentRecords]);
-
   const onPageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -104,34 +115,37 @@ export function Results() {
         {result ? (
           <>
             <div>
-              <div className="my-5 flex gap-8 justify-between">
+              <div className="my-5 flex gap-8 justify-between items-center">
                 <div>
                   <Button onClick={() => setResult(null)}>Reset</Button>
                 </div>
 
-                <div className="flex gap-8 justify-between align-middle items-center">
-                  <Select
-                    value={groupedBy}
-                    onChange={(e) => {
-                      setGroupedBy(e.target.value as ViewType);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <option value={ViewType.Query}>
-                      {ViewType.Query.valueOf().toUpperCase()}
-                    </option>
-                    <option value={ViewType.Subject}>
-                      {ViewType.Subject.valueOf().toUpperCase()}
-                    </option>
-                  </Select>
-                  <div className="-mt-1">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={groupedResults.length}
-                      onPageChange={onPageChange}
-                    />
-                  </div>
+                <div
+                  className={`-mt-1 ${
+                    groupedBy !== ViewType.Query ? "hidden" : ""
+                  }`}
+                >
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={groupedResults.length}
+                    onPageChange={onPageChange}
+                  />
                 </div>
+
+                <Select
+                  value={groupedBy}
+                  onChange={(e) => {
+                    setGroupedBy(e.target.value as ViewType);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <option value={ViewType.Query}>
+                    {ViewType.Query.valueOf().toUpperCase()}
+                  </option>
+                  <option value={ViewType.Subject}>
+                    {ViewType.Subject.valueOf().toUpperCase()}
+                  </option>
+                </Select>
               </div>
 
               <div>
@@ -143,9 +157,11 @@ export function Results() {
                       </td>
                       <td>in</td>
                       <td className="text-gray-500 font-bold">
-                        {paginatedResults.length}
+                        {groupedResults.length}
                       </td>
-                      <td>pages</td>
+                      <td>
+                        {groupedBy === ViewType.Query ? "pages" : "groups"}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -219,25 +235,33 @@ export function Results() {
                       0
                     );
 
+                    const taxon = record.taxon;
+
                     return (
                       <div
                         key={index}
-                        className="flex justify-between text-lg text-gray-100 dark:text-gray-100 bg-gray-800 dark:bg-gray-800 p-2 hover:bg-gray-700 dark:hover:bg-gray-700"
+                        className="flex justify-between items-center text-lg text-gray-100 dark:text-gray-100 bg-gray-800 dark:bg-gray-800 p-2 hover:bg-gray-700 dark:hover:bg-gray-700 group"
                         style={{ height: `${groupedSectionHeight}px` }}
                       >
                         <div className="whitespace-nowrap text-gray-900 dark:text-gray-100 py-1">
-                          {record.query}
+                          <button
+                            className="group-hover:underline group-hover:text-blue-500 mr-3"
+                            onClick={() => handleQueryDetails(record)}
+                          >
+                            {record.query}
+                          </button>
+                          <CopyToClipboard text={record.query} />
                         </div>
-                        {record.taxon && (
+                        {taxon && (
                           <div className="flex justify-between align-middle items-center gap-12">
                             <div className="py-1">
-                              {record.taxon.percIdentity.toFixed(1)}{" "}
+                              {taxon.percIdentity.toFixed(1)}{" "}
                               <span className="text-sm text-gray-500">%</span>
                             </div>
-                            <div className="py-1">{record.taxon.bitScore}</div>
+                            <div className="py-1">{taxon.bitScore}</div>
                             <div className="py-1">
                               <div className="w-[250px] h-full flex whitespace-nowrap">
-                                {record.taxon.consensusBeans
+                                {taxon.consensusBeans
                                   .slice(0, chunkSize)
                                   .map((item, index) => (
                                     <Tooltip
@@ -265,9 +289,10 @@ export function Results() {
                                       </div>
                                     </Tooltip>
                                   ))}
-                                {record?.taxon &&
-                                  record?.taxon?.consensusBeans.length >
-                                    chunkSize && <FaPlus className="ml-1" />}
+                                {taxon &&
+                                  taxon?.consensusBeans.length > chunkSize && (
+                                    <FaPlus className="ml-1" />
+                                  )}
                               </div>
                             </div>
                           </div>
@@ -279,6 +304,8 @@ export function Results() {
                   containerHeight={
                     group.chunk.length > pageSize
                       ? pageSize * groupedSectionHeight
+                      : group.chunk.length === 1
+                      ? 2 * groupedSectionHeight
                       : group.chunk.length * groupedSectionHeight
                   }
                 />
@@ -288,7 +315,62 @@ export function Results() {
           <ResultUpload resultSetter={setResult} />
         )}
       </div>
+
+      <ConsensusModal
+        result={currentQuery}
+        openModal={!!currentQuery}
+        setOpenModal={() => handleQueryDetails(undefined)}
+      />
     </div>
+  );
+}
+
+function ConsensusModal({
+  result,
+  openModal,
+  setOpenModal,
+}: {
+  result: Result | undefined;
+  openModal: boolean;
+  setOpenModal: () => void;
+}) {
+  return !result ? null : (
+    <Modal show={openModal} onClose={() => setOpenModal()}>
+      <Modal.Header>{result.query}</Modal.Header>
+      <Modal.Body>
+        <div className="m-1">
+          {result?.taxon?.consensusBeans.map((item, index) => (
+            <div
+              key={index}
+              className="p-4 border-t border-gray-500 shadow bg-gray-100 dark:bg-gray-800 text-gray-100"
+            >
+              <div>
+                <span className="text-lg">
+                  {kebabToSciname(item.identifier, item.rank)}
+                </span>
+                <span className="text-sm ml-3 text-gray-500">
+                  {kebabToPlain(item.rank)}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500 mr-2">Occurrences:</span>
+                {item.occurrences}
+              </div>
+              <div className="flex max-h-[150px] overflow-auto">
+                <span className="text-gray-500 mr-2">Accessions:</span>
+                <div className="flex flex-wrap">
+                  {item.accessions.map((acc, index) => (
+                    <div key={index} className="mr-3">
+                      {acc}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Modal.Body>
+    </Modal>
   );
 }
 
@@ -380,7 +462,7 @@ function ResultRow({ record }: { record: Result }) {
       {showChildren && (
         <Table.Row className="bg-white dark:border-gray-700 dark:bg-gray-700">
           <Table.Cell colSpan={8}>
-            <div className="mx-3 my-2">
+            <div className="mx-1 my-2">
               {record?.taxon?.consensusBeans.map((item, index) => (
                 <div
                   key={index}
@@ -400,7 +482,7 @@ function ResultRow({ record }: { record: Result }) {
                   </div>
                   <div className="flex">
                     <span className="text-gray-500 mr-2">Accessions:</span>
-                    <div className="flex">
+                    <div className="flex flex-wrap">
                       {item.accessions.map((acc, index) => (
                         <div key={index} className="mr-3">
                           {acc}
@@ -419,5 +501,22 @@ function ResultRow({ record }: { record: Result }) {
         </Table.Row>
       )}
     </Fragment>
+  );
+}
+
+function CopyToClipboard({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
+  return (
+    <MdCopyAll
+      className={
+        "inline invisible group-hover:visible hover:cursor-pointer " + className
+      }
+      onClick={() => navigator.clipboard.writeText(text)}
+    />
   );
 }
