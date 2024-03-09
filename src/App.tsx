@@ -1,4 +1,3 @@
-import "react-virtualized/styles.css";
 import "./App.css";
 import { Anonymous } from "./pages";
 
