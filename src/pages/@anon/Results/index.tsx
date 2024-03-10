@@ -53,32 +53,32 @@ export function Results() {
 
   return (
     <div className="min-h-screen pb-32">
-      <div className="m-8">
+      <div>
+        <div className="px-5 py-2 border-b-[0.5px] border-b-gray-200 dark:border-b-gray-700 flex gap-8 justify-between items-center">
+          <div>
+            <Button onClick={() => setBlutilsResult(null)}>Reset</Button>
+          </div>
+
+          <Select
+            value={groupedBy}
+            onChange={(e) => {
+              setPageSize(10);
+              setGroupedBy(e.target.value as ViewType);
+            }}
+          >
+            <option value={ViewType.Query}>
+              {ViewType.Query.valueOf().toUpperCase()}
+            </option>
+            <option value={ViewType.Subject}>
+              {ViewType.Subject.valueOf().toUpperCase()}
+            </option>
+          </Select>
+        </div>
+      </div>
+
+      <div className="mx-5">
         {blutilsResult ? (
           <>
-            <div>
-              <div className="my-5 flex gap-8 justify-between items-center">
-                <div>
-                  <Button onClick={() => setBlutilsResult(null)}>Reset</Button>
-                </div>
-
-                <Select
-                  value={groupedBy}
-                  onChange={(e) => {
-                    setPageSize(10);
-                    setGroupedBy(e.target.value as ViewType);
-                  }}
-                >
-                  <option value={ViewType.Query}>
-                    {ViewType.Query.valueOf().toUpperCase()}
-                  </option>
-                  <option value={ViewType.Subject}>
-                    {ViewType.Subject.valueOf().toUpperCase()}
-                  </option>
-                </Select>
-              </div>
-            </div>
-
             {groupedBy === ViewType.Query && groupedResults && (
               <TableView
                 records={groupedResults}

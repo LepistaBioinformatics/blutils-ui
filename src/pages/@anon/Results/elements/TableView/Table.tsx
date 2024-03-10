@@ -106,7 +106,7 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
 
   return (
     <div>
-      <div className="flex flex-wrap justify-center items-baseline gap-8 mb-3 mx-3 xl:-mt-16">
+      <div className="flex flex-wrap justify-center items-baseline gap-8 mb-3 mx-3">
         <ResultsPaginationStats
           total={filteredRecords.length}
           groups={paginatedResults.length}

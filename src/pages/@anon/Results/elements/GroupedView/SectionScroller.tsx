@@ -2,9 +2,14 @@
 
 import { useElementInView } from "@/hooks/use-element-in-view";
 import React, { useState } from "react";
+import { TaxonomyCell } from "../TaxonomyCell";
+import { kebabToPlain } from "@/functions/kebab-to-plain";
+import { kebabToScinameString } from "@/functions/kebab-to-scientific-name";
 
 interface Props {
-  sectionName: React.ReactNode;
+  name: string;
+  rank: string;
+  taxonomy: string;
   rowHeight: number;
   totalItems: number;
   items: React.ReactNode[];
@@ -13,7 +18,9 @@ interface Props {
 }
 
 export default function SectionScroller({
-  sectionName,
+  name,
+  rank,
+  taxonomy,
   rowHeight,
   totalItems,
   items,
@@ -24,6 +31,10 @@ export default function SectionScroller({
     threshold: 0,
     rootMargin: "15px",
   });
+
+  //  Correction factor to adjust the height of the container when virtual
+  //  scrolling is used.
+  const correctionFactor = 129;
 
   // Calculate the total height of the container
   const totalHeight = rowHeight * totalItems;
@@ -50,15 +61,31 @@ export default function SectionScroller({
 
   return (
     <div
+      id={name}
       ref={ref}
       className="max-w-6xl m-auto"
       style={{
-        minHeight: containerHeight + 25,
+        minHeight: containerHeight + correctionFactor,
       }}
     >
       {inView && (
         <>
-          <h3 className="text-gray-100 my-5">{sectionName}</h3>
+          <h3 className="text-gray-100 my-5">
+            <div className="mt-16 mb-8">
+              <div className="flex gap-8 items-baseline">
+                <div className="text-3xl">
+                  {kebabToScinameString(name, rank)}
+                </div>
+                <div className="text-sm text-gray-500 uppercase mt-1">
+                  {kebabToPlain(rank)}
+                </div>
+                <div className="text-lg text-gray-500">x{items.length}</div>
+              </div>
+              <div className="-ml-2 mt-3">
+                <TaxonomyCell taxonomy={taxonomy} />
+              </div>
+            </div>
+          </h3>
           <div
             style={{
               height: containerHeight + 25,
