@@ -1,10 +1,11 @@
 import { kebabToPlain } from "./kebab-to-plain";
 
-export function kebabToSciname(
-  value: string,
-  rank: "species" | "genus" | string
-) {
-  if (["species", "genus"].includes(rank)) {
+type Rank = "species" | "genus" | "subspecies" | string;
+
+const ITALIZED_RANKS = ["species", "genus", "subspecies"];
+
+export function kebabToSciname(value: string, rank: Rank) {
+  if (ITALIZED_RANKS.includes(rank)) {
     return (
       <span className="italic">
         {value
@@ -25,11 +26,8 @@ export function kebabToSciname(
   return <span>{kebabToPlain(value)}</span>;
 }
 
-export function kebabToScinameString(
-  value: string,
-  rank: "species" | "genus" | string
-) {
-  if (["species", "genus"].includes(rank)) {
+export function kebabToScinameString(value: string, rank: Rank) {
+  if (ITALIZED_RANKS.includes(rank)) {
     return value
       .replace(/-/g, " ")
       .split(" ")

@@ -6,6 +6,8 @@ import { useMemo, useState } from "react";
 import { ResultsPaginationStats } from "@/components/ResultsPaginationStats";
 import { ViewType } from "@/types/ViewType";
 import { kebabToPlain } from "@/functions/kebab-to-plain";
+import { Result } from "@/types/BlutilsResult";
+import { ConsensusModal } from "../ConsensusModal";
 
 interface Props {
   records: GroupedResults[];
@@ -29,6 +31,14 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
   const [noMatchedSearch, setNoMatchedSearch] = useState<NoMatchedAction>(
     NoMatchedAction.SHOW_ALSO
   );
+
+  const [currentQuery, setCurrentQuery] = useState<Result | undefined>(
+    undefined
+  );
+
+  const handleQueryDetails = (result: Result | undefined) => {
+    setCurrentQuery(result);
+  };
 
   function chunk<T>(values: T[], size: number): T[][] {
     return Array.from(new Array(Math.ceil(values.length / size)), (_, i) =>
@@ -152,6 +162,9 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
               Proposed Taxon
             </SearchableHeadCell>
             <FBTable.HeadCell className="whitespace-nowrap">
+              Rule
+            </FBTable.HeadCell>
+            <FBTable.HeadCell className="whitespace-nowrap">
               Rank
             </FBTable.HeadCell>
             <FBTable.HeadCell className="whitespace-nowrap">
@@ -168,10 +181,22 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
             {currentRecords &&
               currentRecords
                 .flatMap((res) => res.chunk)
-                .map((record, index) => <Row key={index} record={record} />)}
+                .map((record, index) => (
+                  <Row
+                    key={index}
+                    record={record}
+                    handleQueryDetails={handleQueryDetails}
+                  />
+                ))}
           </FBTable.Body>
         </FBTable>
       </div>
+
+      <ConsensusModal
+        result={currentQuery}
+        openModal={!!currentQuery}
+        setOpenModal={() => handleQueryDetails(undefined)}
+      />
     </div>
   );
 }

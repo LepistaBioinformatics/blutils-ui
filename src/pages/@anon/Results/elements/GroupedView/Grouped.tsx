@@ -3,9 +3,14 @@ import SectionScroller from "./SectionScroller";
 import { CopyToClipboard } from "@/components/CopyToClipBoard";
 import { MiniChart } from "@/components/MiniChart";
 import { Result } from "@/types/BlutilsResult";
-import { ConsensusModal } from "./ConsensusModal";
+import { ConsensusModal } from "../ConsensusModal";
 import { useState } from "react";
-import { kebabToScinameString } from "@/functions/kebab-to-scientific-name";
+import {
+  kebabToSciname,
+  kebabToScinameString,
+} from "@/functions/kebab-to-scientific-name";
+import { BeanSelectionRules } from "@/types/BeanSelectionRules";
+import { Tooltip } from "flowbite-react";
 
 interface Props {
   results: GroupedResults[];
@@ -43,7 +48,7 @@ export function Grouped({ results, pageSize }: Props) {
           ))}
         </aside>
 
-        <div className="w-full">
+        <div className="w-full pl-3">
           {results &&
             results.map((result, index) => (
               <SectionScroller
@@ -60,6 +65,10 @@ export function Grouped({ results, pageSize }: Props) {
                   );
 
                   const taxon = record.taxon;
+                  const mostProbableTaxon =
+                    BeanSelectionRules.getMostProbableTaxon(
+                      taxon?.consensusBeans
+                    );
 
                   return (
                     <div
@@ -78,11 +87,44 @@ export function Grouped({ results, pageSize }: Props) {
                       </div>
                       {taxon && (
                         <div className="flex justify-between align-middle items-center gap-12">
-                          <div className="py-1">
-                            {taxon.percIdentity.toFixed(1)}{" "}
-                            <span className="text-sm text-gray-500">%</span>
+                          {mostProbableTaxon?.bean?.identifier && (
+                            <>
+                              <div>
+                                {kebabToSciname(
+                                  mostProbableTaxon?.bean.identifier,
+                                  mostProbableTaxon?.bean.rank
+                                )}
+                              </div>
+                              <div
+                                className="min-w-[10px] max-w-min text-right text-gray-500"
+                                style={{
+                                  color:
+                                    mostProbableTaxon.rule === 1
+                                      ? "green"
+                                      : mostProbableTaxon.rule === 2
+                                      ? "orange"
+                                      : "",
+                                }}
+                              >
+                                <Tooltip
+                                  content={BeanSelectionRules.getRuleDescription(
+                                    mostProbableTaxon.rule
+                                  )}
+                                >
+                                  {mostProbableTaxon.rule}
+                                </Tooltip>
+                              </div>
+                            </>
+                          )}
+                          <div className="py-1 min-w-[70px] max-w-min text-right">
+                            {taxon.percIdentity.toFixed(1)}
+                            <span className="ml-1 text-sm text-gray-500">
+                              %
+                            </span>
                           </div>
-                          <div className="py-1">{taxon.bitScore}</div>
+                          <div className="py-1 text-right">
+                            {taxon.bitScore}
+                          </div>
                           <div className="py-1">
                             <MiniChart
                               taxon={taxon}
