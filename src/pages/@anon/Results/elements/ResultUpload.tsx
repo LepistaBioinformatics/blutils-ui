@@ -1,6 +1,7 @@
 import { useForm, SubmitHandler } from "react-hook-form";
-import { BlutilsResult } from "../../../../types/BlutilsResult";
+import { BlutilsResult } from "@/types/BlutilsResult";
 import { FileInput, Button } from "flowbite-react";
+import { LandingPage } from "./LandingPage";
 
 interface IFormInput {
   content: FileList;
@@ -42,6 +43,7 @@ export function ResultUpload({ resultSetter }: Props) {
       <p className="max-w-sm">
         Use this field to load the JSON field containing the Blutils results
       </p>
+      <LandingPage />
     </div>
   );
 }

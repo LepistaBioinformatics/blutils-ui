@@ -1,5 +1,5 @@
 import { Tooltip } from "flowbite-react";
-import { kebabToPlain } from "../../../../functions/kebab-to-plain";
+import { kebabToPlain } from "@/functions/kebab-to-plain";
 
 interface Props {
   taxonomy: string;
@@ -8,7 +8,7 @@ interface Props {
 
 export function TaxonomyCell({ taxonomy, className }: Props) {
   return (
-    <div className={"flex " + className}>
+    <div className={"flex flex-wrap " + className}>
       {taxonomy.split(";").map((bit, index) => {
         const splittted = bit.split("__");
 
@@ -16,7 +16,7 @@ export function TaxonomyCell({ taxonomy, className }: Props) {
           return (
             <div
               key={index}
-              className="pl-2 my-0 py-0  text-gray-400 dark:text-gray-600"
+              className="pl-2 my-0 py-0  text-gray-400 dark:text-gray-600 whitespace-nowrap"
             >
               <Tooltip
                 content={translateRank(splittted.at(0) as string).toUpperCase()}
