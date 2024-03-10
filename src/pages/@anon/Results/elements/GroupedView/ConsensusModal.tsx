@@ -25,15 +25,15 @@ export function ConsensusModal({ result, openModal, setOpenModal }: Props) {
                 className="p-4 border-t border-gray-500 shadow bg-gray-100 dark:bg-gray-800 text-gray-100"
               >
                 <div className="flex justify-between mb-5 text-2xl">
-                  <div>
-                    <span className="text-xl group">
+                  <div className="group">
+                    <span>
                       {sciName}
                       <CopyToClipboard
                         text={sciName.props.children}
-                        className="ml-3 mb-1 text-white text-lg"
+                        className="mx-2 mb-1 text-white"
                       />
                     </span>
-                    <span className="text-sm ml-3 text-gray-500">
+                    <span className="text-sm text-gray-500">
                       {kebabToPlain(item.rank)}
                     </span>
                   </div>
@@ -50,7 +50,7 @@ export function ConsensusModal({ result, openModal, setOpenModal }: Props) {
                       className="ml-3 mb-1 text-white text-lg"
                     />
                   </div>
-                  <div className="flex flex-wrap">
+                  <div className="flex flex-wrap text-gray-400">
                     {item.accessions.map((acc, index) => (
                       <div key={index} className="mr-3">
                         {acc}

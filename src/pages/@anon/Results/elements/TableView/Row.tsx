@@ -25,7 +25,7 @@ export function Row({ record }: { record: Result }) {
         className="text-lg bg-white border-t dark:border-t-gray-700 dark:bg-gray-800 hover:border hover:border-gray-500 border-b-none"
         onClick={() => setShowChildren(!showChildren)}
       >
-        <FBTable.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100 pt-4 pb-3">
+        <FBTable.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100 pt-2 pb-1">
           {record.query}
         </FBTable.Cell>
         {!taxon ? (

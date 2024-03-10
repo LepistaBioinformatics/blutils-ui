@@ -1,7 +1,7 @@
 import { Result } from "./BlutilsResult";
 import { ViewType } from "./ViewType";
 
-export interface PaginatedResults {
+export interface GroupedResults {
     name: string;
     rank: string;
     taxonomy: string;
