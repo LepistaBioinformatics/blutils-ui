@@ -12,7 +12,7 @@ interface Props {
 
 export function ConsensusModal({ result, openModal, setOpenModal }: Props) {
   return !result ? null : (
-    <Modal show={openModal} onClose={() => setOpenModal()}>
+    <Modal show={openModal} onClose={() => setOpenModal()} className="dark">
       <Modal.Header>{result.query}</Modal.Header>
       <Modal.Body>
         <div className="m-1">
@@ -22,7 +22,7 @@ export function ConsensusModal({ result, openModal, setOpenModal }: Props) {
             return (
               <div
                 key={index}
-                className="p-4 border-t border-gray-500 shadow bg-gray-100 dark:bg-gray-800 text-gray-100"
+                className="p-4 border-t border-gray-500 shadow bg-gray-800 text-gray-100"
               >
                 <div className="flex justify-between mb-5 text-2xl">
                   <div className="group">
