@@ -1,17 +1,29 @@
 import { Results } from "./Results";
 import { Navbar } from "flowbite-react";
+import { FaGithub } from "react-icons/fa";
 
 function Layout() {
   return (
     <main>
       <Navbar fluid rounded>
+        <Navbar.Brand href="https://lepistabioinformatics.github.io/blutils-ui/">
+          <img
+            src={process.env.PUBLIC_URL + "/favicon-32x32.png"}
+            className="mr-3 h-6 sm:h-9"
+            alt="Blutils UI logo"
+          />
+          <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
+            Blutils UI
+          </span>
+        </Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse>
           <Navbar.Link
             href="https://github.com/LepistaBioinformatics/blutils"
-            active
+            target="_blank"
+            className="text-lg"
           >
-            Github
+            <FaGithub className="inline mr-2" /> Blutils
           </Navbar.Link>
         </Navbar.Collapse>
       </Navbar>
