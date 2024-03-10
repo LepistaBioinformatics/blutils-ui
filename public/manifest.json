@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Blutils UI",
+  "name": "A simple UI for Blutils results exploration",
   "icons": [
     {
       "src": "favicon.ico",
