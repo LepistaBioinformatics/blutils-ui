@@ -89,7 +89,7 @@ export function Grouped({ results, pageSize }: Props) {
                         <div className="flex justify-between align-middle items-center gap-12">
                           {mostProbableTaxon?.bean?.identifier && (
                             <>
-                              <div>
+                              <div className="whitespace-nowrap">
                                 {kebabToSciname(
                                   mostProbableTaxon?.bean.identifier,
                                   mostProbableTaxon?.bean.rank

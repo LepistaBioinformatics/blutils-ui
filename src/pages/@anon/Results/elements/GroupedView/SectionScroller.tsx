@@ -63,7 +63,7 @@ export default function SectionScroller({
     <div
       id={name}
       ref={ref}
-      className="max-w-6xl m-auto"
+      className="m-auto xl:m-32"
       style={{
         minHeight: containerHeight + correctionFactor,
       }}
@@ -73,7 +73,7 @@ export default function SectionScroller({
           <h3 className="text-gray-100 my-5">
             <div className="mt-16 mb-8">
               <div className="flex gap-8 items-baseline">
-                <div className="text-3xl">
+                <div className="text-3xl whitespace-nowrap">
                   {kebabToScinameString(name, rank)}
                 </div>
                 <div className="text-sm text-gray-500 uppercase mt-1">
