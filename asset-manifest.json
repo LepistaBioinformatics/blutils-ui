@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/blutils-ui/static/css/main.28088d54.css",
-    "main.js": "/blutils-ui/static/js/main.c2572383.js",
+    "main.css": "/blutils-ui/static/css/main.0da70da0.css",
+    "main.js": "/blutils-ui/static/js/main.ef56738c.js",
     "static/js/453.6cb89f7d.chunk.js": "/blutils-ui/static/js/453.6cb89f7d.chunk.js",
     "index.html": "/blutils-ui/index.html",
-    "main.28088d54.css.map": "/blutils-ui/static/css/main.28088d54.css.map",
-    "main.c2572383.js.map": "/blutils-ui/static/js/main.c2572383.js.map",
+    "main.0da70da0.css.map": "/blutils-ui/static/css/main.0da70da0.css.map",
+    "main.ef56738c.js.map": "/blutils-ui/static/js/main.ef56738c.js.map",
     "453.6cb89f7d.chunk.js.map": "/blutils-ui/static/js/453.6cb89f7d.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.28088d54.css",
-    "static/js/main.c2572383.js"
+    "static/css/main.0da70da0.css",
+    "static/js/main.ef56738c.js"
   ]
 }
