@@ -1,4 +1,4 @@
-import { GroupedResults } from "@/types/PaginatedResults";
+import { ResultsGroupedByTaxonomy } from "@/types/GroupedResults";
 import SectionScroller from "./SectionScroller";
 import { CopyToClipboard } from "@/components/CopyToClipBoard";
 import { MiniChart } from "@/components/MiniChart";
@@ -13,7 +13,7 @@ import { BeanSelectionRules } from "@/types/BeanSelectionRules";
 import { Tooltip } from "flowbite-react";
 
 interface Props {
-  results: GroupedResults[];
+  results: ResultsGroupedByTaxonomy[];
   pageSize: number;
 }
 
@@ -102,8 +102,8 @@ export function Grouped({ results, pageSize }: Props) {
                                     mostProbableTaxon.rule === 1
                                       ? "green"
                                       : mostProbableTaxon.rule === 2
-                                      ? "orange"
-                                      : "",
+                                        ? "orange"
+                                        : "",
                                 }}
                               >
                                 <Tooltip
@@ -141,8 +141,8 @@ export function Grouped({ results, pageSize }: Props) {
                   result.chunk.length > pageSize
                     ? pageSize * groupedSectionHeight
                     : result.chunk.length === 1
-                    ? 2 * groupedSectionHeight
-                    : result.chunk.length * groupedSectionHeight
+                      ? 2 * groupedSectionHeight
+                      : result.chunk.length * groupedSectionHeight
                 }
               />
             ))}

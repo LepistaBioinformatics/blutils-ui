@@ -1,4 +1,5 @@
 export enum ViewType {
-    Query = "table",
-    Subject = "grouped",
+    Table = "table",
+    GroupedBySubject = "grouped-by-subject",
+    GroupedByTaxonomy = "grouped-by-taxonomy",
 }

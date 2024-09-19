@@ -15,7 +15,7 @@ export function ResultsPaginationStats({ total, groups, groupedBy }: Props) {
             <td className="text-gray-500 font-bold">{total}</td>
             <td>in</td>
             <td className="text-gray-500 font-bold">{groups}</td>
-            <td>{groupedBy === ViewType.Query ? "pages" : "groups"}</td>
+            <td>{groupedBy === ViewType.Table ? "pages" : "groups"}</td>
           </tr>
         </tbody>
       </table>

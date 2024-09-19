@@ -1,8 +1,15 @@
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, set } from "react-hook-form";
 import { BlutilsResult } from "@/types/BlutilsResult";
 import { FileInput, Button, Spinner } from "flowbite-react";
 import { LandingPage } from "./LandingPage";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
+const EXAMPLE_RAW_RESULT_URL = "https://raw.githubusercontent.com/LepistaBioinformatics/blutils/8c42f3e7bfe2d1e9de2038985e7c9a47625b6e78/test/mock/output/zymo-mock/blutils.consensus.json";
+
+const EXAMPLE_DATA_URL = "https://github.com/LepistaBioinformatics/blutils/blob/8c42f3e7bfe2d1e9de2038985e7c9a47625b6e78/test/mock/output/zymo-mock/blutils.consensus.json";
+
+const BLUTILS_GITHUB_URL = "https://github.com/LepistaBioinformatics/blutils";
 
 interface IFormInput {
   content: FileList;
@@ -12,22 +19,46 @@ interface Props {
   resultSetter: (result: BlutilsResult) => void;
 }
 
-export function ResultUpload({ resultSetter }: Props) {
+export function ResultLoader({ resultSetter }: Props) {
   const [isLoading, setIsLoading] = useState(false);
-
+  const [searchParams, setSearchParams] = useSearchParams();
   const { register, handleSubmit } = useForm<IFormInput>();
 
-  const handleDownloadExample = () => {
+  const urlIsValid = (urlString: string | null) => {
+    try {
+      if (!urlString) return false;
+      return Boolean(new URL(urlString));
+    } catch (_) {
+      return false;
+    }
+  }
+
+  const memoizedUrlState = useMemo(() => {
+    if (searchParams.has("p")) {
+      const p = searchParams.get("p");
+      if (urlIsValid(p)) return p as string;
+    }
+
+    return null;
+  }, [searchParams]);
+
+  /**
+   * Fetches the example data from the Blutils repository
+   */
+  const handleLoadFromPath = (path: string) => {
     setIsLoading(true);
 
-    fetch(
-      "https://raw.githubusercontent.com/LepistaBioinformatics/blutils/8c42f3e7bfe2d1e9de2038985e7c9a47625b6e78/test/mock/output/zymo-mock/blutils.consensus.json"
-    )
+    fetch(path)
       .then((response) => response.text())
       .then((text) => resultSetter(JSON.parse(text)))
+      .then(() => setSearchParams({ p: path }))
       .catch((e) => console.error(e))
       .finally(() => setIsLoading(false));
   };
+
+  useEffect(() => {
+    memoizedUrlState && handleLoadFromPath(memoizedUrlState);
+  }, [memoizedUrlState]);
 
   const onSubmit: SubmitHandler<IFormInput> = async ({
     content,
@@ -37,6 +68,7 @@ export function ResultUpload({ resultSetter }: Props) {
 
     try {
       let fileContent = await targetFile.text();
+      setSearchParams({ p: targetFile.name });
       resultSetter(JSON.parse(fileContent));
     } catch (e) {
       console.error(e);
@@ -54,7 +86,15 @@ export function ResultUpload({ resultSetter }: Props) {
             onSubmit={handleSubmit(onSubmit)}
             className="flex justify-around gap-3 my-5 border-t-2 border-t-gray-500 pt-5"
           >
-            <FileInput id="file" {...register("content")} className="w-full" />
+            <FileInput
+              id="file"
+              className="w-full"
+              {...register("content")}
+              onChange={(e: any) => {
+                const file = e.target.files[0];
+                if (file) setSearchParams({ p: file.name });
+              }}
+            />
             <Button type="submit">Submit</Button>
           </form>
           <p className="max-w-lg">
@@ -67,7 +107,7 @@ export function ResultUpload({ resultSetter }: Props) {
           <p className="my-3">
             Or load{" "}
             <a
-              href="https://github.com/LepistaBioinformatics/blutils/blob/8c42f3e7bfe2d1e9de2038985e7c9a47625b6e78/test/mock/output/zymo-mock/blutils.consensus.json"
+              href={EXAMPLE_DATA_URL}
               className="text-blue-500 font-bold hover:underline"
               target="_blank"
               rel="noreferrer"
@@ -76,7 +116,7 @@ export function ResultUpload({ resultSetter }: Props) {
             </a>{" "}
             from the{" "}
             <a
-              href="https://github.com/LepistaBioinformatics/blutils"
+              href={BLUTILS_GITHUB_URL}
               className="text-blue-500 font-bold hover:underline"
               target="_blank"
               rel="noreferrer"
@@ -85,7 +125,7 @@ export function ResultUpload({ resultSetter }: Props) {
             </a>{" "}
             repository
           </p>
-          <Button fullSized onClick={handleDownloadExample}>
+          <Button fullSized onClick={() => handleLoadFromPath(EXAMPLE_RAW_RESULT_URL)}>
             {isLoading ? <Spinner /> : "Load example"}
           </Button>
         </div>

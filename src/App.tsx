@@ -1,11 +1,23 @@
 import "./App.css";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Anonymous } from "./pages";
+import NotFound from "./pages/404";
+import InternalError from "./pages/5xx";
+
+const HOME = process.env.PUBLIC_URL;
 
 function App() {
   return (
-    <div className="dark bg-gray-900">
-      <Anonymous />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Anonymous />} />
+        <Route path={HOME} index element={<Anonymous />} />
+
+        <Route path={`${HOME}/*`} element={<NotFound />} />
+        <Route path={`${HOME}/404`} element={<NotFound />} />
+        <Route path={`${HOME}/5xx`} element={<InternalError />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -4,9 +4,9 @@ import { FaGithub } from "react-icons/fa";
 
 function Layout() {
   return (
-    <main>
+    <main className="dark bg-gray-900">
       <Navbar fluid rounded>
-        <Navbar.Brand href="https://lepistabioinformatics.github.io/blutils-ui/">
+        <Navbar.Brand href={process.env.PUBLIC_URL}>
           <img
             src={process.env.PUBLIC_URL + "/favicon-32x32.png"}
             className="mr-3 h-6 sm:h-9"

@@ -18,13 +18,12 @@ export function MiniChart({ taxon, occurrences }: Props) {
       {taxon.consensusBeans.slice(0, CHUNK_SIZE).map((item, index) => (
         <Tooltip
           key={index}
-          content={`${kebabToScinameString(item.identifier, item.rank)} x${
-            item.occurrences
-          }`}
+          content={`${kebabToScinameString(item.identifier, item.rank)} x${item.occurrences
+            }`}
         >
           <div
             key={index}
-            className={`border border-gray-300 dark:border-gray-700 rounded-md h-5`}
+            className="border border-gray-300 dark:border-gray-700 rounded-md h-5"
             style={{
               width:
                 (item.occurrences / occurrences) * OCCURRENCES_MAX_SIZE + "px",

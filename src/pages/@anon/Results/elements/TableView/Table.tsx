@@ -1,6 +1,6 @@
 import { Table as FBTable, Pagination, Dropdown } from "flowbite-react";
 import { SearchableHeadCell } from "./SearchableHeadCell";
-import { GroupedResults } from "@/types/PaginatedResults";
+import { ResultsGroupedByTaxonomy } from "@/types/GroupedResults";
 import { Row } from "./Row";
 import { useMemo, useState } from "react";
 import { ResultsPaginationStats } from "@/components/ResultsPaginationStats";
@@ -10,7 +10,7 @@ import { Result } from "@/types/BlutilsResult";
 import { ConsensusModal } from "../ConsensusModal";
 
 interface Props {
-  records: GroupedResults[];
+  records: ResultsGroupedByTaxonomy[];
   pageSize: number;
   handlePageSize: (size: number) => void;
 }
@@ -96,11 +96,11 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
       .filter((res) => res.chunk.length > 0);
   }, [records, noMatchedSearch, querySearch, subjectSearch]);
 
-  const paginatedResults: GroupedResults[][] = useMemo(() => {
+  const paginatedResults: ResultsGroupedByTaxonomy[][] = useMemo(() => {
     return chunk(filteredRecords, pageSize);
   }, [filteredRecords, pageSize]);
 
-  const currentRecords: GroupedResults[] | undefined = useMemo(() => {
+  const currentRecords: ResultsGroupedByTaxonomy[] | undefined = useMemo(() => {
     if (paginatedResults.length === 0) return undefined;
 
     if (currentPage < paginatedResults.length) {
@@ -120,7 +120,7 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
         <ResultsPaginationStats
           total={filteredRecords.length}
           groups={paginatedResults.length}
-          groupedBy={ViewType.Query}
+          groupedBy={ViewType.Table}
         />
         <Dropdown
           color="gray"
