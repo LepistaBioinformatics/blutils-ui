@@ -63,11 +63,12 @@
     "**/postcss-svgo/svgo": "^2.8.1"
   },
   "scripts": {
+    "dev": "craco start",
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "craco eject",
-    "predeploy": "npm run build",
+    "predeploy": "yarn build",
     "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
