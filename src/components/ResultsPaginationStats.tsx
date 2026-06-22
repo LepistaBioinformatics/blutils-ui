@@ -12,9 +12,9 @@ export function ResultsPaginationStats({ total, groups, groupedBy }: Props) {
       <table className="text-gray-400 dark:text-gray-600 text-sm">
         <tbody>
           <tr className="flex gap-2">
-            <td className="text-gray-500 font-bold">{total}</td>
+            <td className="text-gray-600 dark:text-gray-400 font-bold">{total}</td>
             <td>in</td>
-            <td className="text-gray-500 font-bold">{groups}</td>
+            <td className="text-gray-600 dark:text-gray-400 font-bold">{groups}</td>
             <td>{groupedBy === ViewType.Table ? "pages" : "groups"}</td>
           </tr>
         </tbody>

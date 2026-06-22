@@ -1,8 +1,8 @@
-import { useForm, SubmitHandler, set } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { BlutilsResult } from "@/types/BlutilsResult";
 import { FileInput, Button, Spinner } from "flowbite-react";
 import { LandingPage } from "./LandingPage";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const EXAMPLE_RAW_RESULT_URL = "https://raw.githubusercontent.com/LepistaBioinformatics/blutils/8c42f3e7bfe2d1e9de2038985e7c9a47625b6e78/test/mock/output/zymo-mock/blutils.consensus.json";
@@ -45,20 +45,23 @@ export function ResultLoader({ resultSetter }: Props) {
   /**
    * Fetches the example data from the Blutils repository
    */
-  const handleLoadFromPath = (path: string) => {
-    setIsLoading(true);
+  const handleLoadFromPath = useCallback(
+    (path: string) => {
+      setIsLoading(true);
 
-    fetch(path)
-      .then((response) => response.text())
-      .then((text) => resultSetter(JSON.parse(text)))
-      .then(() => setSearchParams({ p: path }))
-      .catch((e) => console.error(e))
-      .finally(() => setIsLoading(false));
-  };
+      fetch(path)
+        .then((response) => response.text())
+        .then((text) => resultSetter(JSON.parse(text)))
+        .then(() => setSearchParams({ p: path }))
+        .catch((e) => console.error(e))
+        .finally(() => setIsLoading(false));
+    },
+    [resultSetter, setSearchParams]
+  );
 
   useEffect(() => {
     memoizedUrlState && handleLoadFromPath(memoizedUrlState);
-  }, [memoizedUrlState]);
+  }, [memoizedUrlState, handleLoadFromPath]);
 
   const onSubmit: SubmitHandler<IFormInput> = async ({
     content,
@@ -77,14 +80,14 @@ export function ResultLoader({ resultSetter }: Props) {
 
   return (
     <>
-      <div className="dark:text-gray-300 m-auto max-w-lg border p-5 my-32 rounded-xl flex flex-col gap-16">
+      <div className="m-auto my-32 flex max-w-lg flex-col gap-16 rounded-xl border border-gray-200 bg-surface p-8 shadow-sm dark:border-gray-700 dark:bg-surface-dark dark:text-gray-300">
         <div>
           <h1 className="text-3xl text-center font-bold mt-6 mb-12">
             Blutils Results Explorer
           </h1>
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex justify-around gap-3 my-5 border-t-2 border-t-gray-500 pt-5"
+            className="flex justify-around gap-3 my-5 border-t border-gray-200 dark:border-gray-700 pt-5"
           >
             <FileInput
               id="file"
@@ -103,12 +106,12 @@ export function ResultLoader({ resultSetter }: Props) {
           <LandingPage />
         </div>
 
-        <div className="border-t-2 border-t-gray-500 my-5 pt-5">
+        <div className="border-t border-gray-200 dark:border-gray-700 my-5 pt-5">
           <p className="my-3">
             Or load{" "}
             <a
               href={EXAMPLE_DATA_URL}
-              className="text-blue-500 font-bold hover:underline"
+              className="text-brand-600 dark:text-brand-400 font-bold hover:underline"
               target="_blank"
               rel="noreferrer"
             >
@@ -117,7 +120,7 @@ export function ResultLoader({ resultSetter }: Props) {
             from the{" "}
             <a
               href={BLUTILS_GITHUB_URL}
-              className="text-blue-500 font-bold hover:underline"
+              className="text-brand-600 dark:text-brand-400 font-bold hover:underline"
               target="_blank"
               rel="noreferrer"
             >

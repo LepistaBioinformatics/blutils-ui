@@ -37,11 +37,11 @@ export function Grouped({ results, pageSize }: Props) {
               key={index}
               href={`#${result.name}`}
               title={result.name}
-              className="text-left hover:cursor-pointer hover:rounded-lg border border-transparent hover:border-gray-300 hover:transition-all hover:bg-gray-800 dark:hover:bg-gray-800 p-2 mx-3 flex justify-between items-center gap-5"
+              className="text-left hover:cursor-pointer hover:rounded-lg border border-transparent hover:border-gray-300 hover:transition-all hover:bg-gray-100 dark:hover:bg-gray-800 p-2 mx-3 flex justify-between items-center gap-5"
             >
               <div>{kebabToScinameString(result.name, result.rank)}</div>
               <div>
-                <span className="text-gray-500 text-sm mr-2">x</span>
+                <span className="text-gray-600 dark:text-gray-400 text-sm mr-2">x</span>
                 {result.chunk.length}
               </div>
             </a>
@@ -72,12 +72,12 @@ export function Grouped({ results, pageSize }: Props) {
                   return (
                     <div
                       key={index}
-                      className="flex justify-between items-center text-lg text-gray-100 dark:text-gray-100 bg-gray-800 dark:bg-gray-800 p-2 hover:bg-gray-700 dark:hover:bg-gray-700 border-b-[0.5px] border-gray-300 dark:border-gray-700 group"
+                      className="flex justify-between items-center text-lg text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b-[0.5px] border-gray-300 dark:border-gray-700 group"
                       style={{ height: `${groupedSectionHeight}px` }}
                     >
                       <div className="whitespace-nowrap text-gray-900 dark:text-gray-100 py-1">
                         <button
-                          className="group-hover:underline group-hover:text-blue-500 mr-3"
+                          className="group-hover:underline group-hover:text-brand-600 dark:group-hover:text-brand-400 mr-3"
                           onClick={() => handleQueryDetails(record)}
                         >
                           {record.query}
@@ -95,7 +95,7 @@ export function Grouped({ results, pageSize }: Props) {
                                 )}
                               </div>
                               <div
-                                className="min-w-[10px] max-w-min text-right text-gray-500"
+                                className="min-w-[10px] max-w-min text-right text-gray-600 dark:text-gray-400"
                                 style={{
                                   color:
                                     mostProbableTaxon.rule === 1
@@ -117,7 +117,7 @@ export function Grouped({ results, pageSize }: Props) {
                           )}
                           <div className="py-1 min-w-[70px] max-w-min text-right">
                             {taxon.percIdentity.toFixed(1)}
-                            <span className="ml-1 text-sm text-gray-500">
+                            <span className="ml-1 text-sm text-gray-600 dark:text-gray-400">
                               %
                             </span>
                           </div>

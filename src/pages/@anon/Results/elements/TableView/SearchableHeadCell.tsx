@@ -34,7 +34,7 @@ export function SearchableHeadCell({
   const watchTerm = watch("term");
 
   return (
-    <Table.HeadCell className="whitespace-nowrap hover:border-2 hover:border-blue-500 p-0">
+    <Table.HeadCell className="whitespace-nowrap hover:border-2 hover:border-brand-500 p-0">
       <div
         className="flex gap-5 hover:cursor-pointer p-5"
         onClick={() => setShowSearch(true)}
@@ -63,7 +63,7 @@ export function SearchableHeadCell({
               <div className="flex items-center">
                 {children}
                 {watchTerm && (
-                  <div className="mx-1 text-blue-500">
+                  <div className="mx-1 inline-flex items-center rounded bg-science-100 px-2 py-0.5 text-science-800 dark:bg-science-900/40 dark:text-science-300">
                     <MdKeyboardArrowRight className="inline text-xl -mt-1 mr-1" />
                     {watchTerm}
                   </div>
@@ -74,7 +74,7 @@ export function SearchableHeadCell({
         </div>
         {watchTerm && (
           <FaTimesCircle
-            className="h-4 w-5 hover:cursor-pointer text-yellow-500"
+            className="h-4 w-5 hover:cursor-pointer text-science-600 dark:text-science-400"
             onClick={() => {
               setValue("term", "", { shouldValidate: true });
               handleInternalSearch("");

@@ -32,7 +32,7 @@ export function Row({ record, handleQueryDetails }: Props) {
 
   const ConsensusTule = () => (
     <div
-      className="min-w-[10px] max-w-min text-right text-gray-500"
+      className="min-w-[10px] max-w-min text-right text-gray-600 dark:text-gray-400"
       style={{
         color:
           mostProbableTaxon.rule === 1
@@ -58,7 +58,7 @@ export function Row({ record, handleQueryDetails }: Props) {
       >
         <FBTable.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100 pt-2 pb-1">
           <button
-            className="group-hover:underline group-hover:text-blue-500 mr-3"
+            className="group-hover:underline group-hover:text-brand-600 dark:group-hover:text-brand-400 mr-3"
             onClick={() => handleQueryDetails(record)}
           >
             {record.query}
@@ -77,7 +77,7 @@ export function Row({ record, handleQueryDetails }: Props) {
             <FBTable.Cell className="whitespace-nowrap flex flex-col align-top text-gray-900 dark:text-gray-100 py-1">
               {kebabToSciname(taxon.identifier, taxon.reachedRank)}
               {mostProbableTaxon.bean?.identifier !== taxon.identifier && (
-                <span className="text-sm text-gray-300">
+                <span className="text-sm text-gray-600 dark:text-gray-300">
                   {mostProbableTaxon.bean &&
                     kebabToSciname(
                       mostProbableTaxon?.bean.identifier,
