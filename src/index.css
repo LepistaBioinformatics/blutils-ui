@@ -11,20 +11,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* If the user prefers dark mode, 
-we of course apply color-scheme: dark, as usual */
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Theme follows the user's system preference by default and can be overridden
+   via the navbar toggle. flowbite-react drives the `dark` class on <html>;
+   `color-scheme` is kept in sync so native widgets (scrollbars, form controls)
+   match. The `.dark` rule wins when the user forces dark mode. */
+html {
+  color-scheme: light;
 }
 
-/* If the user prefers light mode, 
-we still enforce color-scheme: dark, despite the user preference */
-@media (prefers-color-scheme: light) {
-  html {
-    color-scheme: dark;
-  }
+html.dark {
+  color-scheme: dark;
 }
 
 code {

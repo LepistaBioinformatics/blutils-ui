@@ -22,7 +22,7 @@ export function ConsensusModal({ result, openModal, setOpenModal }: Props) {
             return (
               <div
                 key={index}
-                className="p-4 border-t border-gray-500 shadow bg-gray-800 text-gray-100"
+                className="p-4 border-t border-gray-500 shadow bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"
               >
                 <div className="flex justify-between mb-5 text-2xl">
                   <div className="group">
@@ -30,27 +30,27 @@ export function ConsensusModal({ result, openModal, setOpenModal }: Props) {
                       {sciName}
                       <CopyToClipboard
                         text={sciName.props.children}
-                        className="mx-2 mb-1 text-white"
+                        className="mx-2 mb-1 text-gray-900 dark:text-white"
                       />
                     </span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {kebabToPlain(item.rank)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500 mr-1">x</span>
+                    <span className="text-gray-600 dark:text-gray-400 mr-1">x</span>
                     <span>{item.occurrences}</span>
                   </div>
                 </div>
                 <div className="max-h-[150px] overflow-auto">
-                  <div className="text-gray-500 mr-2 group">
+                  <div className="text-gray-600 dark:text-gray-400 mr-2 group">
                     Accessions
                     <CopyToClipboard
                       text={item.accessions.join(" ")}
-                      className="ml-3 mb-1 text-white text-lg"
+                      className="ml-3 mb-1 text-gray-900 dark:text-white text-lg"
                     />
                   </div>
-                  <div className="flex flex-wrap text-gray-400">
+                  <div className="flex flex-wrap text-gray-600 dark:text-gray-400">
                     {item.accessions.map((acc, index) => (
                       <div key={index} className="mr-3">
                         {acc}

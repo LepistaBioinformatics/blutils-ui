@@ -16,7 +16,7 @@ interface IFormInput {
 
 export function Results() {
   const [pageSize, setPageSize] = useState(10);
-  const [_, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
   const [wrapCharacter, setWrapCharacter] = useState<string | undefined>(undefined);
 
   const [viewType, setViewType] = useState<ViewType>(ViewType.Table);

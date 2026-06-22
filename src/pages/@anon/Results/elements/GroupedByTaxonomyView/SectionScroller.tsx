@@ -70,16 +70,16 @@ export default function SectionScroller({
     >
       {inView && (
         <>
-          <h3 className="text-gray-100 my-5">
-            <div className="mt-16 mb-8">
+          <h3 className="text-gray-900 dark:text-gray-100 my-5">
+            <div className="mt-16 mb-8 border-l-4 border-science-400 pl-4">
               <div className="flex gap-8 items-baseline">
                 <div className="text-3xl whitespace-nowrap">
                   {kebabToScinameString(name, rank)}
                 </div>
-                <div className="text-sm text-gray-500 uppercase mt-1">
+                <div className="text-sm font-semibold uppercase tracking-wide text-science-700 dark:text-science-400 mt-1">
                   {kebabToPlain(rank)}
                 </div>
-                <div className="text-lg text-gray-500">x{items.length}</div>
+                <div className="text-lg text-gray-600 dark:text-gray-400">x{items.length}</div>
               </div>
               <div className="-ml-2 mt-3">
                 <TaxonomyCell taxonomy={taxonomy} />
