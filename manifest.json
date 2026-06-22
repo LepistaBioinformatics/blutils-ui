@@ -1,6 +1,6 @@
 {
   "short_name": "Blutils UI",
-  "name": "A simple UI for Blutils results exploration",
+  "name": "Blutils UI — Lepista Bioinformatics Lab",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#7b49a0",
+  "background_color": "#111827"
 }
