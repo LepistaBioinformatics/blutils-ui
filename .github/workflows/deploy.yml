@@ -3,14 +3,17 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
 
-# Let in-flight deploys finish but only keep the latest queued one.
+# Let in-flight deploys finish but only keep the latest queued one. Pull
+# requests get their own group so they never cancel a deploy.
 concurrency:
-  group: gh-pages
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.ref) || 'gh-pages' }}
   cancel-in-progress: true
 
 jobs:
@@ -26,11 +29,15 @@ jobs:
 
       - run: yarn install --frozen-lockfile
 
+      - run: CI=true yarn test --watchAll=false
+
       # Builds with homepage=/blutils-ui/ (from package.json); CI=true treats
       # lint warnings as errors, matching local `yarn build`.
       - run: yarn build
 
+      # Pull requests only install, test and build.
       - name: Publish to gh-pages branch
+        if: github.event_name != 'pull_request'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
