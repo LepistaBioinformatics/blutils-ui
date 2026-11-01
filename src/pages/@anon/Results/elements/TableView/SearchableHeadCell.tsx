@@ -24,7 +24,8 @@ export function SearchableHeadCell({
   const { register, handleSubmit, watch, setValue } = useForm<Inputs>();
 
   const handleInternalSearch = (term: string) => {
-    handleSearch(term === "" ? undefined : term.trim());
+    const trimmed = term.trim();
+    handleSearch(trimmed === "" ? undefined : trimmed);
   };
 
   const onSubmit: SubmitHandler<Inputs> = ({ term }) => {
@@ -75,7 +76,8 @@ export function SearchableHeadCell({
         {watchTerm && (
           <FaTimesCircle
             className="h-4 w-5 hover:cursor-pointer text-science-600 dark:text-science-400"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setValue("term", "", { shouldValidate: true });
               handleInternalSearch("");
             }}

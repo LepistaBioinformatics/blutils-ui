@@ -2,11 +2,9 @@
 
 import { useElementInView } from "@/hooks/use-element-in-view";
 import React, { useState } from "react";
-import { kebabToScinameString } from "@/functions/kebab-to-scientific-name";
 
 interface Props {
   name: string;
-  rank: string;
   rowHeight: number;
   totalItems: number;
   items: React.ReactNode[];
@@ -16,7 +14,6 @@ interface Props {
 
 export default function SectionScroller({
   name,
-  rank,
   rowHeight,
   totalItems,
   items,
@@ -70,7 +67,7 @@ export default function SectionScroller({
             <div className="mt-16 mb-8 border-l-4 border-science-400 pl-4">
               <div className="flex gap-8 items-baseline">
                 <div className="text-3xl whitespace-nowrap">
-                  {kebabToScinameString(name, rank)}
+                  {name}
                 </div>
                 <div className="text-lg text-gray-600 dark:text-gray-400">x{items.length}</div>
               </div>

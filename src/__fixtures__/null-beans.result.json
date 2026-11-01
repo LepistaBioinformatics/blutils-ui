@@ -1,0 +1,19 @@
+{
+  "results": [
+    {
+      "query": "S9_null-beans",
+      "taxon": {
+        "reachedRank": "genus",
+        "maxAllowedRank": null,
+        "identifier": "bacillus",
+        "percIdentity": 99.356,
+        "bitScore": 845.0,
+        "taxonomy": null,
+        "mutated": false,
+        "singleMatch": false,
+        "consensusBeans": null
+      }
+    }
+  ],
+  "config": null
+}

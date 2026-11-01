@@ -59,10 +59,11 @@ export function Grouped({ results, pageSize }: Props) {
                 rowHeight={groupedSectionHeight}
                 totalItems={result.chunk.length}
                 items={result.chunk.map((record, index) => {
-                  const occurrences = record.taxon?.consensusBeans.reduce(
-                    (acc, item) => acc + item.occurrences,
-                    0
-                  );
+                  const occurrences =
+                    record.taxon?.consensusBeans?.reduce(
+                      (acc, item) => acc + item.occurrences,
+                      0
+                    ) ?? 0;
 
                   const taxon = record.taxon;
                   const mostProbableTaxon =
@@ -128,7 +129,7 @@ export function Grouped({ results, pageSize }: Props) {
                           <div className="py-1">
                             <MiniChart
                               taxon={taxon}
-                              occurrences={occurrences as number}
+                              occurrences={occurrences}
                             />
                           </div>
                         </div>

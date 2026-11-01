@@ -100,18 +100,17 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
     return chunk(filteredRecords, pageSize);
   }, [filteredRecords, pageSize]);
 
+  const totalPages = Math.max(1, paginatedResults.length);
+
   const currentRecords: ResultsGroupedByTaxonomy[] | undefined = useMemo(() => {
     if (paginatedResults.length === 0) return undefined;
 
-    if (currentPage < paginatedResults.length) {
-      return paginatedResults[currentPage - 1];
-    }
-
-    return paginatedResults[paginatedResults.length - 1];
+    const page = Math.min(Math.max(1, currentPage), paginatedResults.length);
+    return paginatedResults[page - 1];
   }, [currentPage, paginatedResults]);
 
   const onPageChange = (page: number) => {
-    setCurrentPage(page);
+    setCurrentPage(Math.min(Math.max(1, page), totalPages));
   };
 
   return (
@@ -133,7 +132,10 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
           ].map((action) => (
             <Dropdown.Item
               key={action}
-              onClick={() => setNoMatchedSearch(action)}
+              onClick={() => {
+                setCurrentPage(1);
+                setNoMatchedSearch(action);
+              }}
             >
               {kebabToPlain(action.valueOf())}
             </Dropdown.Item>
@@ -141,24 +143,40 @@ export function Table({ records, pageSize, handlePageSize }: Props) {
         </Dropdown>
         <Dropdown color="gray" label={"Page Size > " + pageSize}>
           {[10, 15, 25, 50, 100].map((size) => (
-            <Dropdown.Item key={size} onClick={() => handlePageSize(size)}>
+            <Dropdown.Item
+              key={size}
+              onClick={() => {
+                setCurrentPage(1);
+                handlePageSize(size);
+              }}
+            >
               {size}
             </Dropdown.Item>
           ))}
         </Dropdown>
         <Pagination
           currentPage={currentPage}
-          totalPages={paginatedResults.length}
+          totalPages={totalPages}
           onPageChange={onPageChange}
         />
       </div>
       <div className="overflow-auto text-gray-900 dark:text-gray-100">
         <FBTable>
           <FBTable.Head className="h-16 text-lg/2">
-            <SearchableHeadCell handleSearch={(term) => setQuerySearch(term)}>
+            <SearchableHeadCell
+              handleSearch={(term) => {
+                setCurrentPage(1);
+                setQuerySearch(term);
+              }}
+            >
               Query
             </SearchableHeadCell>
-            <SearchableHeadCell handleSearch={(term) => setSubjectSearch(term)}>
+            <SearchableHeadCell
+              handleSearch={(term) => {
+                setCurrentPage(1);
+                setSubjectSearch(term);
+              }}
+            >
               Proposed Taxon
             </SearchableHeadCell>
             <FBTable.HeadCell className="whitespace-nowrap">

@@ -1,0 +1,212 @@
+{
+  "results": [
+    {
+      "query": "S1_no-hit",
+      "taxon": null
+    },
+    {
+      "query": "S1_single",
+      "taxon": {
+        "reachedRank": "species",
+        "maxAllowedRank": null,
+        "identifier": "bacillus-subtilis",
+        "percIdentity": 100.0,
+        "bitScore": 845.0,
+        "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus;s__bacillus-subtilis",
+        "mutated": false,
+        "singleMatch": true,
+        "consensusBeans": [
+          {
+            "rank": "species",
+            "identifier": "bacillus-subtilis",
+            "occurrences": 1,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus;s__bacillus-subtilis",
+            "accessions": [
+              "NR000001.1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "query": "S2_rule-two",
+      "taxon": {
+        "reachedRank": "genus",
+        "maxAllowedRank": "species",
+        "identifier": "bacillus",
+        "percIdentity": 99.356,
+        "bitScore": 845.0,
+        "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus",
+        "mutated": true,
+        "singleMatch": false,
+        "consensusBeans": [
+          {
+            "rank": "species",
+            "identifier": "bacillus-subtilis",
+            "occurrences": 4,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus;s__bacillus-subtilis",
+            "accessions": [
+              "A1",
+              "A2",
+              "A3",
+              "A4"
+            ]
+          },
+          {
+            "rank": "species",
+            "identifier": "bacillus-cereus",
+            "occurrences": 2,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus;s__bacillus-cereus",
+            "accessions": [
+              "B1",
+              "B2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "query": "S2_tie",
+      "taxon": {
+        "reachedRank": "genus",
+        "maxAllowedRank": null,
+        "identifier": "bacillus",
+        "percIdentity": 99.356,
+        "bitScore": 845.0,
+        "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus",
+        "mutated": false,
+        "singleMatch": false,
+        "consensusBeans": [
+          {
+            "rank": "species",
+            "identifier": "bacillus-subtilis",
+            "occurrences": 3,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus;s__bacillus-subtilis",
+            "accessions": [
+              "A1",
+              "A2",
+              "A3"
+            ]
+          },
+          {
+            "rank": "species",
+            "identifier": "bacillus-cereus",
+            "occurrences": 3,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus;s__bacillus-cereus",
+            "accessions": [
+              "B1",
+              "B2",
+              "B3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "query": "S3_many-beans",
+      "taxon": {
+        "reachedRank": "family",
+        "maxAllowedRank": null,
+        "identifier": "bacillaceae",
+        "percIdentity": 99.356,
+        "bitScore": 845.0,
+        "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae",
+        "mutated": false,
+        "singleMatch": false,
+        "consensusBeans": [
+          {
+            "rank": "genus",
+            "identifier": "bacillus",
+            "occurrences": 7,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus",
+            "accessions": [
+              "G0"
+            ]
+          },
+          {
+            "rank": "genus",
+            "identifier": "paenibacillus",
+            "occurrences": 6,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__paenibacillus",
+            "accessions": [
+              "G1"
+            ]
+          },
+          {
+            "rank": "genus",
+            "identifier": "lysinibacillus",
+            "occurrences": 5,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__lysinibacillus",
+            "accessions": [
+              "G2"
+            ]
+          },
+          {
+            "rank": "genus",
+            "identifier": "geobacillus",
+            "occurrences": 4,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__geobacillus",
+            "accessions": [
+              "G3"
+            ]
+          },
+          {
+            "rank": "genus",
+            "identifier": "anoxybacillus",
+            "occurrences": 3,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__anoxybacillus",
+            "accessions": [
+              "G4"
+            ]
+          },
+          {
+            "rank": "genus",
+            "identifier": "virgibacillus",
+            "occurrences": 2,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__virgibacillus",
+            "accessions": [
+              "G5"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "query": "S3_species-group",
+      "taxon": {
+        "reachedRank": "species-group",
+        "maxAllowedRank": null,
+        "identifier": "bacillus-subtilis-group",
+        "percIdentity": 99.356,
+        "bitScore": 845.0,
+        "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus;species-group__bacillus-subtilis-group",
+        "mutated": false,
+        "singleMatch": false,
+        "consensusBeans": [
+          {
+            "rank": "species-group",
+            "identifier": "bacillus-subtilis-group",
+            "occurrences": 2,
+            "taxonomy": "d__bacteria;p__bacillota;c__bacilli;o__bacillales;f__bacillaceae;g__bacillus;species-group__bacillus-subtilis-group",
+            "accessions": [
+              "C1",
+              "C2"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "config": {
+    "blutilsVersion": "8.3.1",
+    "subjectReads": "16S_ribosomal_RNA",
+    "taxon": "bacteria",
+    "outFormat": "6 qseqid saccver staxid pident length mismatch gapopen qstart qend sstart send evalue bitscore",
+    "maxTargetSeqs": 10,
+    "percIdentity": 80,
+    "queryCov": 80,
+    "strand": "both",
+    "eValue": 0.001,
+    "wordSize": 15
+  }
+}

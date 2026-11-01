@@ -13,7 +13,7 @@ export function kebabToSciname(value: string, rank: Rank) {
           .split(" ")
           .map((word, index) => {
             if (index === 0) {
-              return word[0].toUpperCase() + word.slice(1);
+              return word.charAt(0).toUpperCase() + word.slice(1);
             }
 
             return word;
@@ -33,7 +33,7 @@ export function kebabToScinameString(value: string, rank: Rank) {
       .split(" ")
       .map((word, index) => {
         if (index === 0) {
-          return word[0].toUpperCase() + word.slice(1);
+          return word.charAt(0).toUpperCase() + word.slice(1);
         }
 
         return word;
