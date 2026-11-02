@@ -1,5 +1,5 @@
 import { Table as FBTable, Tooltip } from "flowbite-react";
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useMemo } from "react";
 import { Result } from "@/types/BlutilsResult";
 import { kebabToSciname } from "@/functions/kebab-to-scientific-name";
 import { kebabToPlain } from "@/functions/kebab-to-plain";
@@ -13,48 +13,41 @@ interface Props {
   handleQueryDetails: (result: Result | undefined) => void;
 }
 
+function ConsensusTule({ rule }: { rule: number }) {
+  return (
+    <div
+      className="min-w-[10px] max-w-min text-right text-gray-600 dark:text-gray-400"
+      style={{
+        color: rule === 1 ? "green" : rule === 2 ? "orange" : "",
+      }}
+    >
+      <Tooltip content={BeanSelectionRules.getRuleDescription(rule)}>
+        {rule !== 0 && rule}
+      </Tooltip>
+    </div>
+  );
+}
+
 export function Row({ record, handleQueryDetails }: Props) {
   const occurrences = useMemo(
     () =>
-      record.taxon?.consensusBeans.reduce(
+      record.taxon?.consensusBeans?.reduce(
         (acc, item) => acc + item.occurrences,
         0
       ) || 0,
     [record.taxon?.consensusBeans]
   );
 
-  const [showChildren, setShowChildren] = useState(false);
   const taxon = record.taxon;
 
   const mostProbableTaxon = BeanSelectionRules.getMostProbableTaxon(
     taxon?.consensusBeans
   );
 
-  const ConsensusTule = () => (
-    <div
-      className="min-w-[10px] max-w-min text-right text-gray-600 dark:text-gray-400"
-      style={{
-        color:
-          mostProbableTaxon.rule === 1
-            ? "green"
-            : mostProbableTaxon.rule === 2
-            ? "orange"
-            : "",
-      }}
-    >
-      <Tooltip
-        content={BeanSelectionRules.getRuleDescription(mostProbableTaxon.rule)}
-      >
-        {mostProbableTaxon.rule !== 0 && mostProbableTaxon.rule}
-      </Tooltip>
-    </div>
-  );
-
   return (
     <Fragment key={record.query + "-child"}>
       <FBTable.Row
         className="text-lg bg-white border-t dark:border-t-gray-700 dark:bg-gray-800 hover:dark:bg-gray-900 border-b-none group"
-        onClick={() => setShowChildren(!showChildren)}
       >
         <FBTable.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-gray-100 pt-2 pb-1">
           <button
@@ -76,18 +69,18 @@ export function Row({ record, handleQueryDetails }: Props) {
           <Fragment>
             <FBTable.Cell className="whitespace-nowrap flex flex-col align-top text-gray-900 dark:text-gray-100 py-1">
               {kebabToSciname(taxon.identifier, taxon.reachedRank)}
-              {mostProbableTaxon.bean?.identifier !== taxon.identifier && (
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  {mostProbableTaxon.bean &&
-                    kebabToSciname(
-                      mostProbableTaxon?.bean.identifier,
-                      mostProbableTaxon?.bean.rank
+              {mostProbableTaxon.bean &&
+                mostProbableTaxon.bean.identifier !== taxon.identifier && (
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {kebabToSciname(
+                      mostProbableTaxon.bean.identifier,
+                      mostProbableTaxon.bean.rank
                     )}
-                </span>
-              )}
+                  </span>
+                )}
             </FBTable.Cell>
             <FBTable.Cell className="py-1">
-              <ConsensusTule />
+              <ConsensusTule rule={mostProbableTaxon.rule} />
             </FBTable.Cell>
             <FBTable.Cell className="py-1">
               {kebabToPlain(taxon.reachedRank)}

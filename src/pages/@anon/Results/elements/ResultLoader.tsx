@@ -2,10 +2,25 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { BlutilsResult } from "@/types/BlutilsResult";
 import { Button, Spinner } from "flowbite-react";
 import { HiOutlineUpload } from "react-icons/hi";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const EXAMPLE_RAW_RESULT_URL = "https://raw.githubusercontent.com/LepistaBioinformatics/blutils/8c42f3e7bfe2d1e9de2038985e7c9a47625b6e78/test/mock/output/zymo-mock/blutils.consensus.json";
+
+const INVALID_FILE_MESSAGE =
+  "That file isn't a valid Blutils result. Make sure it's the blutils.consensus.json your run produced.";
+
+function parseBlutilsResult(text: string): BlutilsResult {
+  const parsed: unknown = JSON.parse(text);
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !Array.isArray((parsed as { results?: unknown }).results)
+  ) {
+    throw new Error("Not a Blutils result");
+  }
+  return parsed as BlutilsResult;
+}
 
 interface IFormInput {
   content: FileList;
@@ -22,6 +37,7 @@ export function ResultLoader({ resultSetter }: Props) {
   const [searchParams, setSearchParams] = useSearchParams();
   const { register, handleSubmit } = useForm<IFormInput>();
   const fileField = register("content");
+  const loadedPath = useRef<string | null>(null);
 
   const urlIsValid = (urlString: string | null) => {
     try {
@@ -42,19 +58,41 @@ export function ResultLoader({ resultSetter }: Props) {
   }, [searchParams]);
 
   /**
-   * Fetches a result file from a URL (used by the sample dataset).
+   * Fetches a result file from a URL (the sample dataset or a `?p=` URL).
    */
   const handleLoadFromPath = useCallback(
     (path: string) => {
+      loadedPath.current = path;
       setIsLoading(true);
       setError(null);
 
       fetch(path)
-        .then((response) => response.text())
-        .then((text) => resultSetter(JSON.parse(text)))
-        .then(() => setSearchParams({ p: path }))
-        .catch(() =>
-          setError("Couldn't load the sample dataset. Please try again.")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          return response.text();
+        })
+        .then(
+          (text) => {
+            let parsed: BlutilsResult;
+            try {
+              parsed = parseBlutilsResult(text);
+            } catch (_) {
+              // A body that was fetched but is not a Blutils result gets the
+              // same message as an invalid upload.
+              setError(INVALID_FILE_MESSAGE);
+              return;
+            }
+            resultSetter(parsed);
+            setSearchParams({ p: path });
+          },
+          () =>
+            setError(
+              path === EXAMPLE_RAW_RESULT_URL
+                ? "Couldn't load the sample dataset. Please try again."
+                : "Couldn't load the result file. Check the URL and try again."
+            )
         )
         .finally(() => setIsLoading(false));
     },
@@ -62,7 +100,11 @@ export function ResultLoader({ resultSetter }: Props) {
   );
 
   useEffect(() => {
-    memoizedUrlState && handleLoadFromPath(memoizedUrlState);
+    // setSearchParams after a load changes `handleLoadFromPath`; skip the path
+    // that was already loaded so it is not fetched twice.
+    if (memoizedUrlState && memoizedUrlState !== loadedPath.current) {
+      handleLoadFromPath(memoizedUrlState);
+    }
   }, [memoizedUrlState, handleLoadFromPath]);
 
   const onSubmit: SubmitHandler<IFormInput> = async ({ content }: IFormInput) => {
@@ -71,14 +113,12 @@ export function ResultLoader({ resultSetter }: Props) {
 
     try {
       const fileContent = await targetFile.text();
-      const parsed = JSON.parse(fileContent);
+      const parsed = parseBlutilsResult(fileContent);
       setError(null);
       setSearchParams({ p: targetFile.name });
       resultSetter(parsed);
     } catch (e) {
-      setError(
-        "That file isn't a valid Blutils result. Make sure it's the blutils.consensus.json your run produced."
-      );
+      setError(INVALID_FILE_MESSAGE);
     }
   };
 

@@ -18,7 +18,7 @@ export default function InternalError() {
       </div>
       <img
         src={process.env.PUBLIC_URL + "/undraw.co/undraw_bug_fixing_oc-7-a.svg"}
-        alt="Page not found"
+        alt="Internal server error"
         height={400}
         width={400}
       />

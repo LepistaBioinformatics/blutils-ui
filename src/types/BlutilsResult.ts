@@ -4,6 +4,7 @@ export interface BlutilsResult {
 }
 
 export interface Result {
+    runId?: string | null
     query: string
     taxon?: Taxon
 }
@@ -14,17 +15,17 @@ export interface Taxon {
     identifier: string
     percIdentity: number
     bitScore: number
-    taxonomy: string
+    taxonomy: string | null
     mutated: boolean
     singleMatch: boolean
-    consensusBeans: ConsensusBean[]
+    consensusBeans: ConsensusBean[] | null
 }
 
 export interface ConsensusBean {
     rank: string
     identifier: string
     occurrences: number
-    taxonomy: string
+    taxonomy: string | null
     accessions: string[]
 }
 

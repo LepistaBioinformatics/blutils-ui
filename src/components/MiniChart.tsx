@@ -13,9 +13,11 @@ const CHUNK_SIZE = 5;
 const OCCURRENCES_MAX_SIZE = 200;
 
 export function MiniChart({ taxon, occurrences }: Props) {
+  const consensusBeans = taxon.consensusBeans ?? [];
+
   return (
     <div className="w-[200px] h-full flex whitespace-nowrap">
-      {taxon.consensusBeans.slice(0, CHUNK_SIZE).map((item, index) => (
+      {consensusBeans.slice(0, CHUNK_SIZE).map((item, index) => (
         <Tooltip
           key={index}
           content={`${kebabToScinameString(item.identifier, item.rank)} x${item.occurrences
@@ -34,7 +36,7 @@ export function MiniChart({ taxon, occurrences }: Props) {
           </div>
         </Tooltip>
       ))}
-      {taxon && taxon?.consensusBeans.length > CHUNK_SIZE && (
+      {consensusBeans.length > CHUNK_SIZE && (
         <FaPlus className="ml-1" />
       )}
     </div>

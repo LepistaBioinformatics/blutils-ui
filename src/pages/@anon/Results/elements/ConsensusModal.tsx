@@ -16,7 +16,7 @@ export function ConsensusModal({ result, openModal, setOpenModal }: Props) {
       <Modal.Header>{result.query}</Modal.Header>
       <Modal.Body>
         <div className="m-1">
-          {result?.taxon?.consensusBeans.map((item, index) => {
+          {result.taxon?.consensusBeans?.map((item, index) => {
             const sciName = kebabToSciname(item.identifier, item.rank);
 
             return (

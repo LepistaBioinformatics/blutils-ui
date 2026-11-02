@@ -49,7 +49,7 @@ export namespace BeanSelectionRules {
      * @param consensusBeans
      * @returns The most probable taxon
      */
-    export function getMostProbableTaxon(consensusBeans: ConsensusBean[] | undefined): ConsensusWithRule {
+    export function getMostProbableTaxon(consensusBeans: ConsensusBean[] | null | undefined): ConsensusWithRule {
         const defaultBean = {
             bean: undefined,
             rule: Rules.NO_BEANS,
@@ -67,7 +67,7 @@ export namespace BeanSelectionRules {
         }
 
         if (consensusBeans.length > 1) {
-            const orderedConsensusBeans = consensusBeans.sort(
+            const orderedConsensusBeans = [...consensusBeans].sort(
                 (a, b) => b.occurrences - a.occurrences
             );
 

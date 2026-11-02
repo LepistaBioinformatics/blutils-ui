@@ -29,7 +29,6 @@ export function Results() {
   const onSubmit: SubmitHandler<IFormInput> = async ({
     character,
   }: IFormInput) => {
-    console.log(character);
     if (character === undefined) return;
     setWrapCharacter(character);
   };
@@ -49,14 +48,13 @@ export function Results() {
       if ([ViewType.Table, ViewType.GroupedBySubject].includes(viewType)) {
         if (wrapCharacter && viewType === ViewType.GroupedBySubject) {
           const splitted = item.query.split(wrapCharacter);
-          key = splitted.at(0);
+          key = splitted.at(0) || item.query;
         } else {
           key = item.query;
         }
 
       } else if (viewType === ViewType.GroupedByTaxonomy) {
-        if (!item.taxon) key = unidentifiedKey;
-        key = item.taxon?.identifier;
+        key = item.taxon ? item.taxon.identifier : unidentifiedKey;
 
       } else {
         throw new Error("Unknown grouping type");

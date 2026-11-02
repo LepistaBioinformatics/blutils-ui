@@ -5,10 +5,7 @@ import { MiniChart } from "@/components/MiniChart";
 import { Result } from "@/types/BlutilsResult";
 import { ConsensusModal } from "../ConsensusModal";
 import { useState } from "react";
-import {
-  kebabToSciname,
-  kebabToScinameString,
-} from "@/functions/kebab-to-scientific-name";
+import { kebabToSciname } from "@/functions/kebab-to-scientific-name";
 import { BeanSelectionRules } from "@/types/BeanSelectionRules";
 import { Tooltip } from "flowbite-react";
 
@@ -39,7 +36,7 @@ export function Grouped({ results, pageSize }: Props) {
               title={result.name}
               className="text-left hover:cursor-pointer hover:rounded-lg border border-transparent hover:border-gray-300 hover:transition-all hover:bg-gray-100 dark:hover:bg-gray-800 p-2 mx-3 flex justify-between items-center gap-5"
             >
-              <div>{kebabToScinameString(result.name, result.rank)}</div>
+              <div>{result.name}</div>
               <div>
                 <span className="text-gray-600 dark:text-gray-400 text-sm mr-2">x</span>
                 {result.chunk.length}
@@ -54,14 +51,14 @@ export function Grouped({ results, pageSize }: Props) {
               <SectionScroller
                 key={index}
                 name={result.name}
-                rank={result.rank}
                 rowHeight={groupedSectionHeight}
                 totalItems={result.chunk.length}
                 items={result.chunk.map((record, index) => {
-                  const occurrences = record.taxon?.consensusBeans.reduce(
-                    (acc, item) => acc + item.occurrences,
-                    0
-                  );
+                  const occurrences =
+                    record.taxon?.consensusBeans?.reduce(
+                      (acc, item) => acc + item.occurrences,
+                      0
+                    ) ?? 0;
 
                   const taxon = record.taxon;
                   const mostProbableTaxon =
@@ -127,7 +124,7 @@ export function Grouped({ results, pageSize }: Props) {
                           <div className="py-1">
                             <MiniChart
                               taxon={taxon}
-                              occurrences={occurrences as number}
+                              occurrences={occurrences}
                             />
                           </div>
                         </div>
