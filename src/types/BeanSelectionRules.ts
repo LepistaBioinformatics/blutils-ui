@@ -12,6 +12,48 @@ export namespace BeanSelectionRules {
         rule: Rules;
     };
 
+    export type RuleKind = "unanimous" | "majority" | "ambiguous" | "unresolved";
+
+    export const RULE_KINDS: RuleKind[] = ["unanimous", "majority", "ambiguous", "unresolved"];
+
+    export const RULE_INFO: Record<RuleKind, { label: string; summary: string; explanation: string }> = {
+        unanimous: {
+            label: "Unanimous",
+            summary: "Only one consensus bean",
+            explanation:
+                "Every reference hit that reached the consensus agrees on a single taxon, so that taxon is proposed directly.",
+        },
+        majority: {
+            label: "Majority",
+            summary: "Twice the occurrences of the second most frequent taxon",
+            explanation:
+                "Several taxa compete. The most frequent one is proposed because it has at least twice the occurrences of the runner-up.",
+        },
+        ambiguous: {
+            label: "Ambiguous",
+            summary: "No taxon reaches twice the occurrences of the runner-up",
+            explanation:
+                "Several taxa compete and none has at least twice the occurrences of the runner-up, so no more specific taxon is proposed than the consensus one.",
+        },
+        unresolved: {
+            label: "Unresolved",
+            summary: "No consensus beans",
+            explanation:
+                "The record has no consensus beans (no significant match, or the engine reported none), so no taxon can be proposed from them.",
+        },
+    };
+
+    /**
+     * The rule as a word. Rule 0 is split: `ambiguous` when beans exist but
+     * none wins, `unresolved` when there are no beans at all.
+     */
+    export function getRuleKind(consensusBeans: ConsensusBean[] | null | undefined): RuleKind {
+        const { rule } = getMostProbableTaxon(consensusBeans);
+        if (rule === Rules.ABSOLUTE_BEAN) return "unanimous";
+        if (rule === Rules.TWICE_OF_SECOND_BEAN) return "majority";
+        return consensusBeans && consensusBeans.length > 0 ? "ambiguous" : "unresolved";
+    }
+
     /**
      * Get the description of the rule as a string
      * 

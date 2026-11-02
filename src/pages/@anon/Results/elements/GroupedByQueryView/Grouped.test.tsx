@@ -1,6 +1,6 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { makeResult, makeTaxon, triggerIntersection } from "@/test-utils";
+import { makeResult, makeTaxon } from "@/test-utils";
 import { Result } from "@/types/BlutilsResult";
 import { ResultsGroupedByQuery } from "@/types/GroupedResults";
 import { ViewType } from "@/types/ViewType";
@@ -8,8 +8,8 @@ import small from "@/__fixtures__/small.result.json";
 import nullBeans from "@/__fixtures__/null-beans.result.json";
 import { Grouped } from "./Grouped";
 
-// Tooltips are covered by Row/MiniChart/TaxonomyCell tests. Here floating-ui
-// positioning only makes every test take over a second; render content inline.
+// Tooltips are covered by the TaxonomyCell tests. Here floating-ui positioning
+// only slows every test down; render content inline.
 jest.mock("flowbite-react", () => {
   const actual = jest.requireActual("flowbite-react");
   return {
@@ -63,134 +63,208 @@ function manyResults(count: number) {
   );
 }
 
-async function renderGrouped(results: ResultsGroupedByQuery[], pageSize = 10) {
-  const utils = render(<Grouped results={results} pageSize={pageSize} />);
-  await act(async () => {});
-  return utils;
+interface Extra {
+  wrapCharacter?: string;
+  onWrapCharacterChange?: jest.Mock;
+  queries?: string[];
 }
 
-async function showSections() {
-  act(() => triggerIntersection(true));
-  await act(async () => {});
+function view(
+  results: ResultsGroupedByQuery[],
+  group: string | null,
+  onGroupChange: jest.Mock,
+  { wrapCharacter, onWrapCharacterChange = jest.fn(), queries }: Extra = {}
+) {
+  return (
+    <Grouped
+      results={results}
+      group={group}
+      onGroupChange={onGroupChange}
+      wrapCharacter={wrapCharacter}
+      onWrapCharacterChange={onWrapCharacterChange}
+      queries={queries ?? results.flatMap((r) => r.chunk.map((c) => c.query))}
+    />
+  );
 }
 
-function section(name: string) {
-  return document.getElementById(name) as HTMLElement;
+async function renderGrouped(
+  results: ResultsGroupedByQuery[],
+  group: string | null = null,
+  onGroupChange = jest.fn(),
+  extra: Extra = {}
+) {
+  const onWrapCharacterChange = extra.onWrapCharacterChange ?? jest.fn();
+  const utils = render(
+    view(results, group, onGroupChange, { ...extra, onWrapCharacterChange })
+  );
+  // let the virtualizer measure and floating-ui settle
+  await act(async () => {});
+  return { ...utils, onGroupChange, onWrapCharacterChange };
+}
+
+function nav() {
+  return screen.getByRole("navigation", { name: "Groups" });
+}
+
+// Group entries only: the sidebar also holds the wrap control.
+function sidebarEntries() {
+  return Array.from(nav().querySelectorAll<HTMLElement>("[data-index] button"));
+}
+
+function header() {
+  return document.querySelector("h3") as HTMLElement;
+}
+
+function recordQueries() {
+  return within(screen.getByLabelText("Group records"))
+    .queryAllByRole("article")
+    .map((a) => a.getAttribute("aria-label"));
 }
 
 function itemRow(query: string) {
-  return screen.getByText(query, { selector: "button" }).parentElement!.parentElement as HTMLElement;
+  return screen.getByRole("article", { name: query });
 }
 
 describe("GroupedByQueryView/Grouped", () => {
-  test("the aside lists one anchor per group with name and count", async () => {
+  test("the sidebar lists one entry per group with name and count", async () => {
     await renderGrouped(groupsFromFixture());
-    const links = Array.from(document.querySelectorAll("aside a"));
-    expect(links.map((a) => a.getAttribute("href"))).toEqual(["#S1", "#S2", "#S3"]);
-    expect(links.map((a) => a.getAttribute("title"))).toEqual(["S1", "S2", "S3"]);
-    expect(links.map((a) => a.textContent)).toEqual(["S1x2", "S2x2", "S3x2"]);
-    links.forEach((a) => expect(section(a.getAttribute("title")!)).not.toBeNull());
+    const entries = sidebarEntries();
+    expect(entries.map((e) => e.getAttribute("title"))).toEqual(["S1", "S2", "S3"]);
+    expect(entries.map((e) => e.textContent)).toEqual(["S1x2", "S2x2", "S3x2"]);
+    expect(screen.getByRole("navigation", { name: "Groups" })).toHaveTextContent("3 groups");
   });
 
   // BUG-U18: query names used to go through kebabToScinameString with the first
   // record's rank ("S1_no-hit" -> "S1_no Hit").
   test("BUG-U18: query names are shown verbatim", async () => {
-    await renderGrouped(groupsPerQuery());
-    const links = Array.from(document.querySelectorAll("aside a"));
-    expect(links.map((a) => a.firstElementChild!.textContent)).toEqual(
-      links.map((a) => a.getAttribute("title"))
+    await renderGrouped(groupsPerQuery(), "S2_rule-two");
+    const entries = sidebarEntries();
+    expect(entries.map((e) => e.firstElementChild!.textContent)).toEqual(
+      entries.map((e) => e.getAttribute("title"))
     );
-    await showSections();
-    expect(section("S2_rule-two").querySelector("h3")).toHaveTextContent(/^S2_rule-twox1$/);
+    expect(header()).toHaveTextContent(/^S2_rule-twox1$/);
   });
 
-  test("containerHeight: n·40 for n ≤ pageSize, 80 for a single record, pageSize·40 above it", async () => {
-    await renderGrouped(
-      [
-        group("one", manyResults(1)),
-        group("three", manyResults(3)),
-        group("ten", manyResults(10)),
-        group("twelve", manyResults(12)),
-      ],
-      10
-    );
-    expect(section("one")).toHaveStyle({ minHeight: "209px" });
-    expect(section("three")).toHaveStyle({ minHeight: "249px" });
-    expect(section("ten")).toHaveStyle({ minHeight: "529px" });
-    expect(section("twelve")).toHaveStyle({ minHeight: "529px" });
-  });
+  test("only the current group is rendered; unknown or missing falls back to the first", async () => {
+    const { rerender, onGroupChange } = await renderGrouped(groupsFromFixture());
+    expect(recordQueries()).toEqual(["S1_no-hit", "S1_single"]);
 
-  test("items are rendered only after the section intersects", async () => {
-    await renderGrouped(groupsFromFixture());
-    expect(screen.queryByText("S1_single")).not.toBeInTheDocument();
-    await showSections();
-    small.results.forEach(({ query }) =>
-      expect(screen.getByText(query, { selector: "button" })).toBeInTheDocument()
-    );
+    rerender(view(groupsFromFixture(), "S2", onGroupChange));
+    await waitFor(() => expect(recordQueries()).toEqual(["S2_rule-two", "S2_tie"]));
+    expect(screen.queryByText("S1_single", { selector: "button" })).not.toBeInTheDocument();
+
+    rerender(view(groupsFromFixture(), "nope", onGroupChange));
+    await waitFor(() => expect(recordQueries()).toEqual(["S1_no-hit", "S1_single"]));
+    expect(onGroupChange).not.toHaveBeenCalled();
   });
 
   test("the section header shows the name and count only (no rank, no taxonomy)", async () => {
-    await renderGrouped(groupsFromFixture());
-    await showSections();
-    expect(section("S2").querySelector("h3")).toHaveTextContent(/^S2x2$/);
+    await renderGrouped(groupsFromFixture(), "S2");
+    expect(header()).toHaveTextContent(/^S2x2$/);
   });
 
-  test("large groups are virtualized to pageSize + 1 items", async () => {
-    await renderGrouped([group("twelve", manyResults(12))], 10);
-    await showSections();
-    expect(within(section("twelve")).getAllByRole("button").map((b) => b.textContent)).toEqual(
-      Array.from({ length: 11 }, (_, i) => `Q${i}`)
+  test("navigation reports the target group's name and marks the current entry", async () => {
+    const { onGroupChange } = await renderGrouped(groupsFromFixture(), "S2");
+    expect(sidebarEntries()[1]).toHaveAttribute("aria-current", "page");
+    userEvent.click(screen.getAllByRole("button", { name: "Next group" })[0]);
+    expect(onGroupChange).toHaveBeenLastCalledWith("S3");
+    userEvent.keyboard("{arrowleft}");
+    expect(onGroupChange).toHaveBeenLastCalledWith("S1");
+    userEvent.click(sidebarEntries()[2]);
+    expect(onGroupChange).toHaveBeenLastCalledWith("S3");
+  });
+
+  test("a large group mounts only a window of records", async () => {
+    await renderGrouped([group("thousand", manyResults(1000))]);
+    await waitFor(() => expect(recordQueries().length).toBeGreaterThan(0));
+    const queries = recordQueries();
+    expect(queries.length).toBeLessThan(100);
+    expect(queries[0]).toBe("Q0");
+  });
+
+  test("item rows are RecordItem entries: rule word, proposed taxon and donut", async () => {
+    const { rerender, onGroupChange } = await renderGrouped(groupsFromFixture(), "S2");
+    expect(screen.getAllByRole("columnheader").map((c) => c.textContent)).toEqual([
+      "Query·Taxonomy",
+      "Proposed taxon",
+      "Rule",
+      "Composition",
+    ]);
+
+    const ruleTwo = itemRow("S2_rule-two");
+    expect(ruleTwo).toHaveTextContent("Bacillus subtilis");
+    expect(within(ruleTwo).getByRole("button", { name: /^Rule: Majority/ })).toBeInTheDocument();
+    expect(within(ruleTwo).getAllByTestId("composition-segment")).toHaveLength(2);
+    expect(ruleTwo).toHaveTextContent("845");
+
+    const tie = itemRow("S2_tie");
+    expect(within(tie).getByRole("button", { name: /^Rule: Ambiguous/ })).toBeInTheDocument();
+
+    rerender(view(groupsFromFixture(), "S1", onGroupChange));
+    await screen.findByRole("article", { name: "S1_single" });
+    expect(
+      within(itemRow("S1_single")).getByRole("button", { name: /^Rule: Unanimous/ })
+    ).toBeInTheDocument();
+    expect(itemRow("S1_no-hit")).toHaveTextContent(/^S1_no-hitNo significant match$/);
+  });
+
+  test("the wrap control sits in the sidebar and above the content", async () => {
+    await renderGrouped(groupsFromFixture());
+    expect(screen.getAllByLabelText("Wrap character")).toHaveLength(2);
+    expect(within(nav()).getByLabelText("Wrap character")).toBeInTheDocument();
+    expect(screen.getByLabelText("Group records")).not.toContainElement(
+      screen.getAllByLabelText("Wrap character")[1]
     );
   });
 
-  test("item rows: most probable bean, coloured rule, identity, bitScore and chart", async () => {
-    await renderGrouped(groupsFromFixture());
-    await showSections();
+  test("the wrap control suggests separators from the queries prop and reports changes", async () => {
+    const { onWrapCharacterChange } = await renderGrouped(groupsPerQuery(), null, jest.fn(), {
+      queries: ["A_1", "A_2", "B_1"],
+    });
+    userEvent.click(
+      within(nav()).getByRole("button", { name: 'Use "_" as wrap character (2 groups)' })
+    );
+    expect(onWrapCharacterChange).toHaveBeenCalledWith("_");
 
-    const ruleTwo = itemRow("S2_rule-two");
-    expect(ruleTwo.querySelector("span.italic")).toHaveTextContent(/^Bacillus subtilis$/);
-    const rule = within(ruleTwo).getByText("2").closest("div.min-w-\\[10px\\]") as HTMLElement;
-    expect(rule.style.color).toBe("orange");
-    expect(ruleTwo).toHaveTextContent("99.4%");
-    expect(ruleTwo).toHaveTextContent("845");
-    expect(ruleTwo.querySelectorAll(".rounded-md.h-5")).toHaveLength(2);
+    userEvent.type(within(nav()).getByLabelText("Wrap character"), "-{enter}");
+    expect(onWrapCharacterChange).toHaveBeenLastCalledWith("-");
+  });
 
-    const single = itemRow("S1_single");
-    const green = within(single).getByText("1").closest("div.min-w-\\[10px\\]") as HTMLElement;
-    expect(green.style.color).toBe("green");
+  test("the wrapCharacter prop is shown in both copies of the control", async () => {
+    await renderGrouped(groupsFromFixture(), null, jest.fn(), { wrapCharacter: "_" });
+    screen.getAllByLabelText("Wrap character").forEach((input) => expect(input).toHaveValue("_"));
+    expect(screen.getAllByRole("button", { name: "Clear wrap character" })).toHaveLength(2);
+  });
 
-    const tie = itemRow("S2_tie");
-    expect(tie.querySelector("div.min-w-\\[10px\\]")).toBeNull();
-    expect(tie).toHaveTextContent("99.4%");
-
-    expect(itemRow("S1_no-hit")).toHaveTextContent(/^S1_no-hit$/);
+  test("arrow keys typed in the wrap input do not navigate", async () => {
+    const { onGroupChange } = await renderGrouped(groupsFromFixture(), "S2");
+    userEvent.type(within(nav()).getByLabelText("Wrap character"), "{arrowright}{arrowleft}");
+    expect(onGroupChange).not.toHaveBeenCalled();
   });
 
   test("the copy icon writes the query to the clipboard", async () => {
-    await renderGrouped(groupsFromFixture());
-    await showSections();
-    const button = screen.getByText("S3_many-beans", { selector: "button" });
-    userEvent.click(button.parentElement!.querySelector("svg")!);
+    await renderGrouped(groupsFromFixture(), "S3");
+    userEvent.click(itemRow("S3_many-beans").querySelector("svg")!);
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith("S3_many-beans");
   });
 
   test("clicking a query opens the consensus modal; Close dismisses it", async () => {
-    await renderGrouped(groupsFromFixture());
-    await showSections();
-    userEvent.click(screen.getByText("S2_rule-two", { selector: "button" }));
+    await renderGrouped(groupsFromFixture(), "S2");
+    userEvent.click(screen.getByRole("button", { name: "S2_rule-two" }));
     const dialog = screen.getByRole("dialog");
     expect(dialog.querySelector("h3")).toHaveTextContent("S2_rule-two");
     expect(within(dialog).getByText("B2")).toBeInTheDocument();
     userEvent.click(within(dialog).getByLabelText("Close"));
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 
   // BUG-U02: `record.taxon?.consensusBeans.reduce` used to guard only taxon and
-  // runs while building the items array, before any intersection.
+  // threw while rendering the item.
   test("BUG-U02: a taxon with consensusBeans null renders the item", async () => {
     const chunk = nullBeans.results as unknown as Result[];
     await renderGrouped([group("S9", chunk)]);
-    await showSections();
-    expect(screen.getByText("S9_null-beans", { selector: "button" })).toBeInTheDocument();
+    const row = itemRow("S9_null-beans");
+    expect(within(row).getByTestId("composition")).toBeInTheDocument();
+    expect(within(row).getByRole("button", { name: /^Rule: Unresolved/ })).toBeInTheDocument();
   });
 });

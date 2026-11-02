@@ -7,6 +7,17 @@ module.exports = {
   ],
   theme: {
     extend: {
+      // Pager chevrons pulse on every navigation (click or arrow key).
+      keyframes: {
+        'nav-pulse': {
+          '0%': { transform: 'scale(1)', backgroundColor: 'rgba(107, 114, 128, 0)' },
+          '35%': { transform: 'scale(1.25)', backgroundColor: 'rgba(107, 114, 128, 0.25)' },
+          '100%': { transform: 'scale(1)', backgroundColor: 'rgba(107, 114, 128, 0)' },
+        },
+      },
+      animation: {
+        'nav-pulse': 'nav-pulse 350ms ease-out',
+      },
       colors: {
         // Lepista Bioinformatics Lab design system.
         // Tokens mirror lbl-landing-page/src/app/globals.css.

@@ -113,3 +113,40 @@ describe("BeanSelectionRules.getMostProbableTaxon", () => {
     expect(input.map((b) => b.occurrences)).toEqual([2, 6]);
   });
 });
+
+describe("BeanSelectionRules.getRuleKind", () => {
+  it("null or empty beans are 'unresolved'", () => {
+    expect(BeanSelectionRules.getRuleKind(null)).toBe("unresolved");
+    expect(BeanSelectionRules.getRuleKind(undefined)).toBe("unresolved");
+    expect(BeanSelectionRules.getRuleKind([])).toBe("unresolved");
+  });
+
+  it("a single bean is 'unanimous'", () => {
+    expect(BeanSelectionRules.getRuleKind(beans(3))).toBe("unanimous");
+  });
+
+  it("a top bean with at least twice the runner-up is 'majority'", () => {
+    expect(BeanSelectionRules.getRuleKind(beans(4, 2))).toBe("majority");
+    expect(BeanSelectionRules.getRuleKind(beans(1, 9, 3))).toBe("majority");
+  });
+
+  it("several beans without a 2x winner are 'ambiguous' (rule 0 with beans)", () => {
+    expect(BeanSelectionRules.getRuleKind(beans(5, 4))).toBe("ambiguous");
+    expect(BeanSelectionRules.getMostProbableTaxon(beans(5, 4)).rule).toBe(NO_BEANS);
+  });
+
+  it("every kind has a one-word label, a summary and an explanation", () => {
+    for (const kind of BeanSelectionRules.RULE_KINDS) {
+      const info = BeanSelectionRules.RULE_INFO[kind];
+      expect(info.label).toMatch(/^[A-Z][a-z]+$/);
+      expect(info.summary).not.toHaveLength(0);
+      expect(info.explanation).not.toHaveLength(0);
+    }
+    expect(BeanSelectionRules.RULE_KINDS).toEqual([
+      "unanimous",
+      "majority",
+      "ambiguous",
+      "unresolved",
+    ]);
+  });
+});

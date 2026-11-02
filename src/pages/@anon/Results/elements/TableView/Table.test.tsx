@@ -3,24 +3,14 @@ import userEvent from "@testing-library/user-event";
 import { Result } from "@/types/BlutilsResult";
 import { ResultsGroupedByTaxonomy } from "@/types/GroupedResults";
 import { ViewType } from "@/types/ViewType";
+import { makeResult, makeTaxon } from "@/test-utils";
+import { TEST_ROW_HEIGHT, TEST_VIEWPORT } from "@/test-utils/virtual";
 import small from "@/__fixtures__/small.result.json";
 import { Table } from "./Table";
 
-// Tooltips are covered by Row/MiniChart/TaxonomyCell tests. Here they only cost
-// time: floating-ui positions ~10 tooltips per row on every update, which
-// makes each test take seconds. Render the content inline instead.
-jest.mock("flowbite-react", () => {
-  const actual = jest.requireActual("flowbite-react");
-  return {
-    ...actual,
-    Tooltip: ({ children, content }: { children: React.ReactNode; content: React.ReactNode }) => (
-      <>
-        <div data-testid="flowbite-tooltip-target">{children}</div>
-        <div data-testid="flowbite-tooltip">{content}</div>
-      </>
-    ),
-  };
-});
+// Filtering now happens in Results (FilterBar); Table only lists what it gets.
+// Search and "Unmatched" behaviors are covered in FilterBar.test.tsx and the
+// Results integration tests.
 
 // Same shape Results/index.tsx builds for the Table view: one group per query,
 // sorted by name. Deep copy so a test never mutates the shared fixture.
@@ -37,26 +27,32 @@ function groupsFromFixture(): ResultsGroupedByTaxonomy[] {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-async function renderTable(records = groupsFromFixture(), pageSize = 10) {
-  const handlePageSize = jest.fn();
-  const utils = render(
-    <Table records={records} pageSize={pageSize} handlePageSize={handlePageSize} />
-  );
-  await settle();
-  return { ...utils, handlePageSize };
+function Harness({ records, total }: { records: ResultsGroupedByTaxonomy[]; total?: number }) {
+  return <Table records={records} total={total ?? records.flatMap((r) => r.chunk).length} />;
 }
 
-// let floating-ui settle its async position updates (tooltips, dropdowns)
-async function settle() {
+async function renderTable(records = groupsFromFixture(), total?: number) {
+  const utils = render(<Harness records={records} total={total} />);
+  // let the virtualizer measure
   await act(async () => {});
+  return utils;
+}
+
+function list() {
+  return screen.getByLabelText("Records");
+}
+
+function mountedItems() {
+  return Array.from(list().querySelectorAll("[data-index]"));
 }
 
 function queries() {
-  const body = screen.getByTestId("table-element").querySelector("tbody")!;
-  return Array.from(body.querySelectorAll("button")).map((b) => b.textContent);
+  return within(list())
+    .queryAllByRole("article")
+    .map((a) => a.getAttribute("aria-label"));
 }
 
-// ResultsPaginationStats renders "<total> in <groups> pages"
+// ResultsPaginationStats: "<total> records" or "<shown> of <total> records"
 function stats(container: HTMLElement) {
   const cells = container.querySelector("table")!.querySelectorAll("td");
   return Array.from(cells)
@@ -64,45 +60,25 @@ function stats(container: HTMLElement) {
     .join(" ");
 }
 
-// Role queries over the whole table are slow (many tooltips), so the helpers
-// below use text/selector queries instead.
-function pagination() {
-  return document.querySelector("nav") as HTMLElement;
+function manyGroups(count: number): ResultsGroupedByTaxonomy[] {
+  return Array.from({ length: count }, (_, i) => {
+    const query = `Q${String(i).padStart(4, "0")}`;
+    return {
+      name: query,
+      rank: "genus",
+      taxonomy: "",
+      groupedBy: ViewType.Table,
+      chunk: [makeResult({ query, taxon: makeTaxon() })],
+    };
+  });
 }
 
-function pageButton(name: string) {
-  return within(pagination()).getByText(name, { selector: "button" });
-}
-
-function dropdownTrigger(label: string) {
-  return screen.getByText(label).closest("button") as HTMLButtonElement;
-}
-
-function menuItems() {
-  return Array.from(document.querySelectorAll('[role="menuitem"]')).map((i) => i.textContent);
-}
-
-function menuItem(name: string) {
-  return screen.getByText(name, { selector: '[role="menuitem"] button' });
-}
-
-function currentPageItem() {
-  return pagination().querySelector('li[aria-current="page"]');
-}
-
-async function search(header: "Query" | "Proposed Taxon", term: string) {
-  userEvent.click(screen.getByText(header));
-  const input = screen.getByPlaceholderText("Search...");
-  userEvent.type(input, term);
-  fireEvent.blur(input);
-  await settle();
-}
-
-async function chooseUnmatched(current: string, option: string) {
-  userEvent.click(dropdownTrigger(`Unmatched > ${current}`));
-  await settle();
-  userEvent.click(menuItem(option));
-  await settle();
+// jsdom has no scrolling: emulate the browser moving the box and firing "scroll"
+// (fireEvent is wrapped in act).
+function scrollListTo(top: number) {
+  const box = list();
+  box.scrollTop = top;
+  fireEvent.scroll(box);
 }
 
 const ALL_QUERIES = [
@@ -115,202 +91,209 @@ const ALL_QUERIES = [
 ];
 
 describe("Table", () => {
-  test("renders every record on page 1 with the headers", async () => {
+  test("renders every record as an entry, under the column header, with a 'records' total", async () => {
     const { container } = await renderTable();
     expect(queries()).toEqual(ALL_QUERIES);
-    ["Query", "Proposed Taxon", "Rule", "Rank", "Identity (%)", "BitScore", "Composition"].forEach(
-      (h) => expect(screen.getByText(h)).toBeInTheDocument()
-    );
-    expect(stats(container)).toBe("6 in 1 pages");
+    expect(screen.getAllByRole("columnheader").map((c) => c.textContent)).toEqual([
+      "Query·Taxonomy",
+      "Proposed taxon",
+      "Rule",
+      "Composition",
+    ]);
+    expect(stats(container)).toBe("6 records");
   });
 
-  test("pageSize counts groups, not records", async () => {
+  test("the header sits outside the scrolling list", async () => {
+    await renderTable();
+    expect(list()).not.toContainElement(screen.getAllByRole("columnheader")[0]);
+  });
+
+  test("records of a group with several results are all listed", async () => {
     const records = groupsFromFixture();
-    // merge two groups into one with 2 records
     const merged = [
       { ...records[0], chunk: [...records[0].chunk, ...records[1].chunk] },
       ...records.slice(2),
     ];
-    const { container } = await renderTable(merged, 2);
-    expect(queries()).toEqual(["S1_no-hit", "S1_single", "S2_rule-two"]);
-    expect(stats(container)).toBe("5 in 3 pages");
+    const { container } = await renderTable(merged);
+    expect(queries()).toEqual(ALL_QUERIES);
+    expect(stats(container)).toBe("6 records");
   });
 
-  test("pagination switches the visible groups", async () => {
-    const { container } = await renderTable(groupsFromFixture(), 2);
-    expect(stats(container)).toBe("6 in 3 pages");
-    expect(currentPageItem()).toHaveTextContent("1");
-
-    userEvent.click(pageButton("2"));
-    await settle();
-    expect(queries()).toEqual(["S2_rule-two", "S2_tie"]);
-
-    userEvent.click(pageButton("Next"));
-    await settle();
-    expect(queries()).toEqual(["S3_many-beans", "S3_species-group"]);
-    expect(currentPageItem()).toHaveTextContent("3");
-    expect(pageButton("Next")).toBeDisabled();
-  });
-
-  test("the page size dropdown offers 10/15/25/50/100 and calls handlePageSize", async () => {
-    const { handlePageSize } = await renderTable();
-    userEvent.click(dropdownTrigger("Page Size > 10"));
-    await settle();
-    expect(menuItems()).toEqual([
-      "10",
-      "15",
-      "25",
-      "50",
-      "100",
-    ]);
-    userEvent.click(menuItem("25"));
-    await settle();
-    expect(handlePageSize).toHaveBeenCalledWith(25);
-  });
-
-  describe("Unmatched filter", () => {
-    test("defaults to SHOW-ALSO and lists the three actions", async () => {
-      await renderTable();
-      userEvent.click(dropdownTrigger("Unmatched > SHOW-ALSO"));
-      await settle();
-      expect(menuItems()).toEqual([
-        "Show Also",
-        "Show Only",
-        "Omit",
-      ]);
-    });
-
-    test("SHOW-ONLY keeps only records without a taxon", async () => {
-      const { container } = await renderTable();
-      await chooseUnmatched("SHOW-ALSO", "Show Only");
-      expect(dropdownTrigger("Unmatched > SHOW-ONLY")).toBeInTheDocument();
-      expect(queries()).toEqual(["S1_no-hit"]);
-      expect(stats(container)).toBe("1 in 1 pages");
-    });
-
-    test("OMIT drops records without a taxon (empty groups removed)", async () => {
-      const { container } = await renderTable();
-      await chooseUnmatched("SHOW-ALSO", "Omit");
-      expect(queries()).toEqual(ALL_QUERIES.filter((q) => q !== "S1_no-hit"));
-      expect(stats(container)).toBe("5 in 1 pages");
-    });
-  });
-
-  describe("search", () => {
-    test("query search is case-insensitive", async () => {
-      const { container } = await renderTable();
-      await search("Query", "s2_");
-      expect(queries()).toEqual(["S2_rule-two", "S2_tie"]);
-      expect(stats(container)).toBe("2 in 1 pages");
-    });
-
-    test("subject search matches the taxon identifier case-insensitively", async () => {
-      await renderTable();
-      await search("Proposed Taxon", "BACILLUS-SUB");
-      expect(queries()).toEqual(["S1_single", "S3_species-group"]);
-    });
-
-    test("subject search never matches records without a taxon", async () => {
-      await renderTable();
-      await search("Proposed Taxon", "no-hit");
-      expect(queries()).toEqual([]);
-    });
-
-    test("query and subject terms are combined with AND", async () => {
-      await renderTable();
-      await search("Query", "s1");
-      await search("Proposed Taxon", "bacillus");
-      expect(queries()).toEqual(["S1_single"]);
-    });
-
-    test("search combines with the Unmatched filter", async () => {
-      await renderTable();
-      await chooseUnmatched("SHOW-ALSO", "Omit");
-      await search("Query", "s1");
-      expect(queries()).toEqual(["S1_single"]);
-    });
-
-    // BUG-U04: SearchableHeadCell used to emit "" for a whitespace-only term,
-    // which Table treated as a filter that matches nothing.
-    test("BUG-U04: a whitespace-only term does not filter", async () => {
-      await renderTable();
-      await search("Query", "   ");
-      expect(queries()).toEqual(ALL_QUERIES);
-    });
-
-    test("clearing the term restores every row", async () => {
-      const { container } = await renderTable();
-      await search("Query", "s2_");
-      const clear = container.querySelectorAll("thead th")[0].querySelectorAll("svg");
-      userEvent.click(clear[clear.length - 1]);
-      await waitFor(() => expect(queries()).toEqual(ALL_QUERIES));
-    });
-  });
-
-  // BUG-U08: currentPage used to survive a filter that shrinks the page count,
-  // leaving Pagination with no current page and both arrows enabled.
-  test("BUG-U08: filtering resets to page 1", async () => {
-    await renderTable(groupsFromFixture(), 1);
-    userEvent.click(pageButton("3"));
-    await settle();
-    await search("Query", "s2_");
-    expect(queries()).toEqual(["S2_rule-two"]);
-    expect(currentPageItem()).toHaveTextContent("1");
-    expect(pageButton("Previous")).toBeDisabled();
-  });
-
-  test("BUG-U08: changing the page size resets to page 1", async () => {
-    const { rerender, handlePageSize } = await renderTable(groupsFromFixture(), 1);
-    userEvent.click(pageButton("3"));
-    await settle();
-    userEvent.click(dropdownTrigger("Page Size > 1"));
-    await settle();
-    userEvent.click(menuItem("15"));
-    await settle();
-    expect(handlePageSize).toHaveBeenCalledWith(15);
-
-    // the parent owns pageSize; emulate it passing a page size of 2
-    rerender(
-      <Table records={groupsFromFixture()} pageSize={2} handlePageSize={handlePageSize} />
-    );
-    await settle();
-    expect(currentPageItem()).toHaveTextContent("1");
+  test("with fewer records than the total the stats read '<shown> of <total> records'", async () => {
+    const { container } = await renderTable(groupsFromFixture().slice(0, 2), 6);
     expect(queries()).toEqual(["S1_no-hit", "S1_single"]);
+    expect(stats(container)).toBe("2 of 6 records");
   });
 
-  // BUG-U17: with zero results Pagination got totalPages=0, so Next stayed enabled
-  // and moved to page 0; the table then read paginatedResults[-1] for good.
-  test("BUG-U17: with zero results 'Next' is disabled and clearing the filter shows the rows", async () => {
-    const { container } = await renderTable();
-    await search("Query", "zzz");
-    const next = pageButton("Next");
-    expect(next).toBeDisabled();
-    userEvent.click(next);
-    await settle();
+  test("there is no pagination, no page size control and no table filter of its own", async () => {
+    await renderTable();
+    expect(document.querySelector("nav")).toBeNull();
+    expect(screen.queryByText(/Page Size/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Unmatched/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+  });
 
-    const clear = container.querySelectorAll("thead th")[0].querySelectorAll("svg");
-    userEvent.click(clear[clear.length - 1]);
-    await waitFor(() => expect(queries()).toEqual(ALL_QUERIES));
+  test("a large record set mounts only a window of entries", async () => {
+    const { container } = await renderTable(manyGroups(1000));
+    await waitFor(() => expect(mountedItems().length).toBeGreaterThan(0));
+    const mounted = mountedItems().length;
+    expect(mounted).toBeLessThan(100);
+    expect(mounted).toBeGreaterThanOrEqual(TEST_VIEWPORT.height / TEST_ROW_HEIGHT);
+    expect(queries()[0]).toBe("Q0000");
+    expect(stats(container)).toBe("1000 records");
+  });
+
+  test("scrolling the list mounts the entries at that offset, up to the last record", async () => {
+    await renderTable(manyGroups(1000));
+    await waitFor(() => expect(mountedItems().length).toBeGreaterThan(0));
+    // Unmeasured entries count with the estimated height, so the end of the
+    // list moves while entries get measured: keep scrolling until it shows.
+    await waitFor(() => {
+      scrollListTo(1_000_000);
+      expect(queries()).toContain("Q0999");
+    });
+    expect(queries()).not.toContain("Q0000");
+    expect(mountedItems().length).toBeLessThan(100);
+  });
+
+  test("new records (a changed filter) scroll the list back to the top", async () => {
+    const records = manyGroups(1000);
+    const { rerender } = await renderTable(records);
+    await waitFor(() => expect(mountedItems().length).toBeGreaterThan(0));
+    const box = list() as HTMLElement & { scrollTo: unknown };
+    const scrollTo = jest.fn();
+    box.scrollTo = scrollTo;
+
+    scrollListTo(500 * TEST_ROW_HEIGHT);
+    await waitFor(() => expect(queries()).not.toContain("Q0000"));
+
+    rerender(<Harness records={records.slice(0, 900)} total={1000} />);
+    await act(async () => {});
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ top: 0 }));
   });
 
   test("clicking a query opens the consensus modal; Close dismisses it", async () => {
     await renderTable();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
-    userEvent.click(screen.getByText("S2_rule-two", { selector: "tbody button" }));
-    await settle();
+    userEvent.click(screen.getByRole("button", { name: "S2_rule-two" }));
     const dialog = screen.getByRole("dialog");
     expect(dialog.querySelector("h3")).toHaveTextContent("S2_rule-two");
     expect(within(dialog).getByText("A1")).toBeInTheDocument();
 
     userEvent.click(within(dialog).getByLabelText("Close"));
-    await settle();
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 
-  test("empty records: no rows and '0 in 0 pages'", async () => {
-    const { container } = await renderTable([]);
+  test("empty records: no entries and '0 records'", async () => {
+    const { container } = await renderTable([], 0);
     expect(queries()).toEqual([]);
-    expect(stats(container)).toBe("0 in 0 pages");
+    expect(stats(container)).toBe("0 records");
+  });
+
+  test("everything filtered out: no entries and '0 of 6 records'", async () => {
+    const { container } = await renderTable([], 6);
+    expect(queries()).toEqual([]);
+    expect(stats(container)).toBe("0 of 6 records");
+  });
+
+  describe("sorting", () => {
+    const shownQueries = () =>
+      within(screen.getByLabelText("Records"))
+        .getAllByRole("article")
+        .map((a) => a.getAttribute("aria-label") ?? "");
+    const natural = new Intl.Collator(undefined, { numeric: true }).compare;
+
+    test("starts in the original order, with no column marked as sorted", async () => {
+      await renderTable();
+      expect(shownQueries()).toEqual(ALL_QUERIES);
+      screen.getAllByRole("columnheader").forEach((h) => expect(h).not.toHaveAttribute("aria-sort"));
+      expect(screen.queryByRole("button", { name: "Original order" })).not.toBeInTheDocument();
+    });
+
+    test("Query cycles ascending → descending → original order", async () => {
+      await renderTable();
+      const query = () => screen.getByRole("button", { name: "Sort by Query" });
+
+      userEvent.click(query());
+      expect(screen.getAllByRole("columnheader")[0]).toHaveAttribute("aria-sort", "ascending");
+      expect(shownQueries()).toEqual([...ALL_QUERIES].sort(natural));
+
+      userEvent.click(query());
+      expect(screen.getAllByRole("columnheader")[0]).toHaveAttribute("aria-sort", "descending");
+      expect(shownQueries()).toEqual([...ALL_QUERIES].sort(natural).reverse());
+
+      userEvent.click(query());
+      expect(screen.getAllByRole("columnheader")[0]).not.toHaveAttribute("aria-sort");
+      expect(shownQueries()).toEqual(ALL_QUERIES);
+    });
+
+    test("the 'Original order' button restores the file order", async () => {
+      await renderTable();
+      userEvent.click(screen.getByRole("button", { name: "Sort by Proposed taxon" }));
+      expect(shownQueries()).not.toEqual(ALL_QUERIES);
+      userEvent.click(screen.getByRole("button", { name: "Original order" }));
+      expect(shownQueries()).toEqual(ALL_QUERIES);
+      expect(screen.queryByRole("button", { name: "Original order" })).not.toBeInTheDocument();
+    });
+
+    test("Proposed taxon sorts by the taxon; records without one go last", async () => {
+      await renderTable();
+      userEvent.click(screen.getByRole("button", { name: "Sort by Proposed taxon" }));
+      expect(screen.getAllByRole("columnheader")[1]).toHaveAttribute("aria-sort", "ascending");
+      expect(screen.getAllByRole("columnheader")[0]).not.toHaveAttribute("aria-sort");
+      const shown = shownQueries();
+      expect(shown[shown.length - 1]).toBe("S1_no-hit");
+    });
+
+    test("Taxonomy sorts by the lineage", async () => {
+      await renderTable();
+      userEvent.click(screen.getByRole("button", { name: "Sort by Taxonomy" }));
+      expect(screen.getByRole("button", { name: "Sort by Taxonomy" })).toHaveAttribute("aria-pressed", "true");
+      // S3_many-beans stops at the family, so its lineage sorts first.
+      expect(shownQueries()[0]).toBe("S3_many-beans");
+      expect(shownQueries()[shownQueries().length - 1]).toBe("S1_no-hit");
+    });
+  });
+
+  describe("keyboard navigation", () => {
+    // `hidden`: while a dialog is open, flowbite marks the page aria-hidden.
+    const highlighted = () =>
+      within(screen.getByLabelText("Records"))
+        .getAllByRole("article", { hidden: true })
+        .filter((a) => a.getAttribute("aria-current") === "true")
+        .map((a) => a.getAttribute("aria-label"));
+
+    test("ArrowDown/ArrowUp move the highlighted record; nothing is highlighted at first", async () => {
+      await renderTable();
+      expect(highlighted()).toEqual([]);
+      fireEvent.keyDown(document.body, { key: "ArrowDown" });
+      expect(highlighted()).toEqual([ALL_QUERIES[0]]);
+      fireEvent.keyDown(document.body, { key: "ArrowDown" });
+      expect(highlighted()).toEqual([ALL_QUERIES[1]]);
+      fireEvent.keyDown(document.body, { key: "ArrowUp" });
+      expect(highlighted()).toEqual([ALL_QUERIES[0]]);
+      fireEvent.keyDown(document.body, { key: "ArrowUp" });
+      expect(highlighted()).toEqual([ALL_QUERIES[0]]);
+    });
+
+    test("Enter opens the details of the highlighted record", async () => {
+      await renderTable();
+      fireEvent.keyDown(document.body, { key: "ArrowDown" });
+      fireEvent.keyDown(document.body, { key: "ArrowDown" });
+      fireEvent.keyDown(document.body, { key: "Enter" });
+      expect(
+        within(screen.getByRole("dialog")).getByRole("heading", { name: ALL_QUERIES[1] })
+      ).toBeInTheDocument();
+    });
+
+    test("arrows do nothing while a dialog is open", async () => {
+      await renderTable();
+      fireEvent.keyDown(document.body, { key: "ArrowDown" });
+      fireEvent.keyDown(document.body, { key: "Enter" });
+      fireEvent.keyDown(document.body, { key: "ArrowDown" });
+      expect(highlighted()).toEqual([ALL_QUERIES[0]]);
+    });
   });
 });
+

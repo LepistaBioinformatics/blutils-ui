@@ -4,9 +4,10 @@ import { useLocation } from "react-router-dom";
 import { renderWithRouter } from "@/test-utils";
 import small from "@/__fixtures__/small.result.json";
 import { ResultLoader } from "./ResultLoader";
+import { exampleResultUrl } from "./ResultLoader";
 
-const EXAMPLE_RAW_RESULT_URL =
-  "https://raw.githubusercontent.com/LepistaBioinformatics/blutils/8c42f3e7bfe2d1e9de2038985e7c9a47625b6e78/test/mock/output/zymo-mock/blutils.consensus.json";
+// The sample dataset is served with the app (public/examples).
+const EXAMPLE_RAW_RESULT_URL = exampleResultUrl();
 
 const INVALID_FILE = /isn't a valid Blutils result/;
 const SAMPLE_FAILED = /Couldn't load the sample dataset/;
@@ -92,7 +93,9 @@ describe("ResultLoader — file upload", () => {
     userEvent.click(viewButton());
     await waitFor(() => expect(resultSetter).toHaveBeenCalledTimes(1));
     expect(resultSetter).toHaveBeenCalledWith(small);
-    expect(search().get("p")).toBe("small.json");
+    // the router applies ?p= on its own schedule; under full-suite load it can
+    // land after resultSetter has been observed
+    await waitFor(() => expect(search().get("p")).toBe("small.json"));
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     // a bare file name is not a URL, so nothing is fetched
     expect(fetchSpy).not.toHaveBeenCalled();

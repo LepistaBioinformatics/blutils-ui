@@ -5,7 +5,17 @@ import { HiOutlineUpload } from "react-icons/hi";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-const EXAMPLE_RAW_RESULT_URL = "https://raw.githubusercontent.com/LepistaBioinformatics/blutils/8c42f3e7bfe2d1e9de2038985e7c9a47625b6e78/test/mock/output/zymo-mock/blutils.consensus.json";
+/**
+ * Sample dataset: the ZymoBIOMICS mock ITS run classified with the relaxed
+ * strategy, as in the blutils benchmark (blutils-benchmarks
+ * output/blutils/ITS/relaxed.json). Served with the app from public/examples;
+ * absolute so that `?p=` keeps it across reloads like any other URL.
+ */
+export const EXAMPLE_RESULT_PATH = "/examples/zymo-its-relaxed.json";
+
+export function exampleResultUrl(): string {
+  return new URL(`${process.env.PUBLIC_URL}${EXAMPLE_RESULT_PATH}`, window.location.origin).href;
+}
 
 const INVALID_FILE_MESSAGE =
   "That file isn't a valid Blutils result. Make sure it's the blutils.consensus.json your run produced.";
@@ -38,6 +48,17 @@ export function ResultLoader({ resultSetter }: Props) {
   const { register, handleSubmit } = useForm<IFormInput>();
   const fileField = register("content");
   const loadedPath = useRef<string | null>(null);
+
+  // Keep the other params (`?v=`, `?g=`) so a shared deep link survives the load.
+  const setPathParam = useCallback(
+    (path: string) =>
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev);
+        params.set("p", path);
+        return params;
+      }),
+    [setSearchParams]
+  );
 
   const urlIsValid = (urlString: string | null) => {
     try {
@@ -85,18 +106,18 @@ export function ResultLoader({ resultSetter }: Props) {
               return;
             }
             resultSetter(parsed);
-            setSearchParams({ p: path });
+            setPathParam(path);
           },
           () =>
             setError(
-              path === EXAMPLE_RAW_RESULT_URL
+              path === exampleResultUrl()
                 ? "Couldn't load the sample dataset. Please try again."
                 : "Couldn't load the result file. Check the URL and try again."
             )
         )
         .finally(() => setIsLoading(false));
     },
-    [resultSetter, setSearchParams]
+    [resultSetter, setPathParam]
   );
 
   useEffect(() => {
@@ -115,7 +136,7 @@ export function ResultLoader({ resultSetter }: Props) {
       const fileContent = await targetFile.text();
       const parsed = parseBlutilsResult(fileContent);
       setError(null);
-      setSearchParams({ p: targetFile.name });
+      setPathParam(targetFile.name);
       resultSetter(parsed);
     } catch (e) {
       setError(INVALID_FILE_MESSAGE);
@@ -150,7 +171,7 @@ export function ResultLoader({ resultSetter }: Props) {
           />
           <label
             htmlFor="file"
-            className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-8 text-center transition-colors hover:border-science-400 hover:bg-science-50 peer-focus-visible:border-science-400 peer-focus-visible:ring-2 peer-focus-visible:ring-science-300 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:border-science-400 dark:hover:bg-science-900/20"
+            className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 px-6 py-8 text-center transition-colors hover:border-gray-400 hover:bg-gray-50 peer-focus-visible:border-gray-500 peer-focus-visible:ring-2 peer-focus-visible:ring-gray-300 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:border-gray-500 dark:hover:bg-gray-800"
           >
             <HiOutlineUpload className="mb-1 h-7 w-7 text-gray-400 dark:text-gray-500" />
             <span className="text-sm font-medium text-ink dark:text-gray-100">
@@ -178,12 +199,15 @@ export function ResultLoader({ resultSetter }: Props) {
           New to Blutils?{" "}
           <button
             type="button"
-            onClick={() => handleLoadFromPath(EXAMPLE_RAW_RESULT_URL)}
+            onClick={() => handleLoadFromPath(exampleResultUrl())}
             disabled={isLoading}
-            className="font-medium text-gray-700 underline decoration-dotted underline-offset-2 hover:text-brand-600 disabled:opacity-60 dark:text-gray-300 dark:hover:text-brand-400"
+            className="font-medium text-gray-700 underline decoration-dotted underline-offset-2 hover:text-gray-900 disabled:opacity-60 dark:text-gray-300 dark:hover:text-white"
           >
             Load a sample dataset
-          </button>
+          </button>{" "}
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            (ZymoBIOMICS mock, ITS, relaxed)
+          </span>
           {isLoading && <Spinner size="sm" className="ml-2 align-middle" />}
         </p>
       </div>
