@@ -32,7 +32,12 @@ export function Shell() {
         fullscreen ? "h-dvh overflow-hidden" : "min-h-screen"
       }`}
     >
-      <Navbar fluid rounded>
+      <Navbar
+        fluid
+        rounded
+        // Transparent over the page; the surface only appears on hover.
+        className="bg-transparent transition-colors duration-200 hover:bg-white dark:bg-transparent dark:hover:bg-gray-800"
+      >
         <Navbar.Brand as={Link} to={HOME || "/"}>
           <img
             src={HOME + "/favicon-32x32.png"}
