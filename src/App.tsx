@@ -19,7 +19,7 @@ const HOME = process.env.PUBLIC_URL;
 function App() {
   return (
     <Flowbite theme={{ mode: "auto", theme: lepistaTheme }}>
-      <BrowserRouter>
+      <BrowserRouter useTransitions={false}>
         <Routes>
           <Route element={<Shell />}>
             <Route path="/" element={<Anonymous />} />

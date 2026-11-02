@@ -14,15 +14,15 @@
     "@types/react-dom": "^18.2.19",
     "@types/react-virtualized": "^9.21.29",
     "autoprefixer": "^10.4.18",
-    "flowbite-react": "^0.7.2",
+    "flowbite-react": "^0.7.8",
     "gh-pages": "^6.1.1",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.23",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.0",
     "react-icons": "^5.0.1",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.30.4",
+    "react-router-dom": "^7.18.0",
     "react-scripts": "5.0.1",
     "remark-gfm": "^4.0.1",
     "tailwindcss": "^3.4.1",
@@ -50,7 +50,7 @@
     "@opentelemetry/core": "^2.8.0",
     "uuid": "^11.1.1",
     "nth-check": "^2.0.1",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.23",
     "**/eslint/js-yaml": "^4.2.0",
     "**/eslintrc/js-yaml": "^4.2.0",
     "**/remark-mdx-frontmatter/js-yaml": "^4.2.0",
@@ -62,7 +62,9 @@
     "**/cosmiconfig/yaml": "^1.10.3",
     "**/cssnano/yaml": "^1.10.3",
     "**/sucrase/glob": "^10.5.0",
-    "**/postcss-svgo/svgo": "^2.8.1"
+    "**/postcss-svgo/svgo": "^2.8.1",
+    "qs": "^6.16.2",
+    "postcss-selector-parser": "^6.1.5"
   },
   "scripts": {
     "dev": "craco start",
@@ -96,7 +98,8 @@
   },
   "jest": {
     "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1"
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^react-router/dom$": "<rootDir>/node_modules/react-router/dist/development/dom-export.js"
     }
   }
 }
