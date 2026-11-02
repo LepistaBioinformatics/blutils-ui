@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@craco/craco": "^7.1.0",
+    "@tanstack/react-virtual": "^3.14.25",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -32,7 +33,6 @@
   "resolutions": {
     "braces": "^3.0.3",
     "micromatch": "^4.0.8",
-    "minimatch": "^9.0.7",
     "ws": "^8.21.0",
     "tar-fs": "^3.1.1",
     "brace-expansion": "^2.0.3",

@@ -7,7 +7,7 @@
 import fs from "fs";
 import path from "path";
 import { Component, ReactNode } from "react";
-import { act, screen } from "@testing-library/react";
+import { act, screen, within } from "@testing-library/react";
 import { renderWithRouter } from "@/test-utils";
 import { Results } from "@/pages/@anon/Results";
 import { BlutilsResult, Config, ConsensusBean, Result, Taxon } from "./BlutilsResult";
@@ -191,7 +191,7 @@ describe("BlutilsResult contract", () => {
 });
 
 describe("Results page consumes the contract golden", () => {
-  test("the Table renders page 1 without error", async () => {
+  test("the Table renders every record without error", async () => {
     const raw = fs.readFileSync(CONTRACT_PATH, "utf8");
     jest.spyOn(global, "fetch").mockResolvedValue(fakeResponse(raw));
 
@@ -201,12 +201,13 @@ describe("Results page consumes the contract golden", () => {
       </ErrorBoundary>,
       { route: "/?p=https://x/blutils.contract.json" }
     );
-    await screen.findByText("Page Size > 10", undefined, { timeout: 4000 });
+    const list = await screen.findByLabelText("Records", undefined, { timeout: 4000 });
     await act(async () => {});
 
     expect(screen.queryByTestId("boundary-error")).not.toBeInTheDocument();
-    const body = screen.getByTestId("table-element").querySelector("tbody")!;
-    const queries = Array.from(body.querySelectorAll("button")).map((b) => b.textContent);
+    const queries = within(list)
+      .getAllByRole("article")
+      .map((a) => a.getAttribute("aria-label"));
     expect(queries).toEqual(load(CONTRACT_PATH).results.map((r) => r.query).sort());
   });
 });
@@ -227,6 +228,23 @@ describeZymo("legacy zymo v7.1.3 output (TC-08)", () => {
       const optional =
         name === "result" ? OPTIONAL_RESULT_KEYS : name === "taxon" ? OPTIONAL_TAXON_KEYS : [];
       expect(required(name, optional).filter((key) => !keys.includes(key))).toEqual([]);
+    }
+  });
+});
+
+// The "Load a sample dataset" file shipped with the app (public/examples): the
+// ZymoBIOMICS ITS run classified with the relaxed strategy (blutils-benchmarks).
+const SAMPLE_PATH = path.resolve(__dirname, "../../public/examples/zymo-its-relaxed.json");
+
+describe("bundled sample dataset (public/examples)", () => {
+  test("matches the contract field-for-field", () => {
+    const sample = load(SAMPLE_PATH);
+    expect(sample.results.length).toBe(1370);
+    expect(sample.config?.blutilsVersion).toBe("9.0.0");
+    for (const { name, value } of visit(sample)) {
+      const keys = Object.keys(value);
+      // Written by the current engine: exactly the TS keys plus the known drift.
+      expect(sorted(keys)).toEqual(sorted([...TS_KEYS[name], ...driftOf(name)]));
     }
   });
 });

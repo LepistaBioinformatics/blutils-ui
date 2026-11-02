@@ -36,7 +36,9 @@ describe("TaxonomyCell", () => {
     ["f", "FAMILY"],
     ["g", "GENUS"],
     ["s", "SPECIES"],
-    ["k", "K"],
+    // UNITE-style fungal lineages (ITS) start with k__ (kingdom).
+    ["k", "KINGDOM"],
+    ["x", "X"],
     ["no-rank", "NO-RANK"],
   ])("rank %s -> tooltip %s", async (rank, expected) => {
     await renderCell(`${rank}__x`);

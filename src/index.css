@@ -27,3 +27,75 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Composition bar palette (constants/sequencial-colors.ts). */
+:root {
+  --composition-1: #8FBFAE;
+  --composition-2: #E2C79A;
+  --composition-3: #A9B8D9;
+  --composition-4: #D9A7A0;
+  --composition-5: #BFA9D4;
+  --composition-6: #B5C99A;
+  --composition-7: #9CC7D1;
+}
+
+.dark {
+  --composition-1: #4F8C7A;
+  --composition-2: #A88A55;
+  --composition-3: #6377A3;
+  --composition-4: #A3665E;
+  --composition-5: #7E6A9C;
+  --composition-6: #76895A;
+  --composition-7: #5A8F9B;
+}
+
+/* Chart palette (009). Categorical slots validated with the dataviz
+   validate_palette.js (light on #ffffff, dark on #1f2937): fixed order, a color
+   follows its taxon; "other" is neutral gray. Sequential blue for the heatmap. */
+:root {
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
+  --series-other: #b8b8b2;
+  --rule-unanimous: #1baf7a;
+  --rule-majority: #eda100;
+  --rule-ambiguous: #8a8a85;
+  --rule-unresolved: #d6d6d1;
+  --seq-0: #f3f4f6;
+  --seq-1: #cde2fb;
+  --seq-2: #9ec5f4;
+  --seq-3: #6da7ec;
+  --seq-4: #3987e5;
+  --seq-5: #256abf;
+  --seq-6: #184f95;
+  --seq-7: #0d366b;
+}
+
+.dark {
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --series-other: #5c5c58;
+  --rule-unanimous: #199e70;
+  --rule-majority: #c98500;
+  --rule-ambiguous: #8a8a85;
+  --rule-unresolved: #45454a;
+  --seq-0: #263040;
+  --seq-1: #184f95;
+  --seq-2: #1c5cab;
+  --seq-3: #256abf;
+  --seq-4: #2a78d6;
+  --seq-5: #3987e5;
+  --seq-6: #6da7ec;
+  --seq-7: #9ec5f4;
+}

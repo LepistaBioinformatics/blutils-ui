@@ -1,8 +1,10 @@
 import { lazy } from "react";
+import { createPortal } from "react-dom";
 import { screen, within } from "@testing-library/react";
-import { Route, Routes } from "react-router-dom";
+import userEvent from "@testing-library/user-event";
+import { Route, Routes, useOutletContext } from "react-router-dom";
 import { renderWithRouter } from "@/test-utils";
-import { Shell } from "./Shell";
+import { Shell, ShellContext } from "./Shell";
 
 // Default flowbite theme (no <Flowbite> wrapper): navbar.link.active.on/off
 const ACTIVE_CLASS = "bg-cyan-700";
@@ -20,6 +22,27 @@ function renderShell(route: string, child = <div>child content</div>) {
     </Routes>,
     { route }
   );
+}
+
+// A child route that toggles fullscreen like the results view does.
+function FullscreenChild() {
+  const { setFullscreen } = useOutletContext<ShellContext>();
+  return (
+    <>
+      <button onClick={() => setFullscreen(true)}>enter fullscreen</button>
+      <button onClick={() => setFullscreen(false)}>leave fullscreen</button>
+    </>
+  );
+}
+
+// A child route that puts a page action into the navbar, like Reset.
+function NavbarActionChild() {
+  const { navbarActions } = useOutletContext<ShellContext>();
+  return navbarActions ? createPortal(<button>page action</button>, navbarActions) : null;
+}
+
+function footer() {
+  return document.querySelector("footer");
 }
 
 function navLink(name: string | RegExp) {
@@ -84,5 +107,30 @@ describe("Shell", () => {
     expect(screen.getByText(/Loading…/)).toBeInTheDocument();
     expect(screen.getByRole("status")).toBeInTheDocument();
     expect(screen.getByText("Blutils UI")).toBeInTheDocument();
+  });
+
+  test("a child route calling setFullscreen(true) hides the footer; false shows it again", () => {
+    renderShell("/", <FullscreenChild />);
+    const main = screen.getByRole("main");
+    expect(footer()).toBeInTheDocument();
+    expect(main).toHaveClass("min-h-screen");
+
+    userEvent.click(screen.getByRole("button", { name: "enter fullscreen" }));
+    expect(footer()).not.toBeInTheDocument();
+    expect(main).toHaveClass("h-dvh", "overflow-hidden");
+    expect(main).not.toHaveClass("min-h-screen");
+    // the navbar stays
+    expect(screen.getByText("Blutils UI")).toBeInTheDocument();
+
+    userEvent.click(screen.getByRole("button", { name: "leave fullscreen" }));
+    expect(footer()).toBeInTheDocument();
+    expect(main).toHaveClass("min-h-screen");
+  });
+
+  it("child routes can render actions into the navbar slot", () => {
+    renderShell("/", <NavbarActionChild />);
+    expect(
+      within(screen.getByRole("navigation")).getByRole("button", { name: "page action" })
+    ).toBeInTheDocument();
   });
 });

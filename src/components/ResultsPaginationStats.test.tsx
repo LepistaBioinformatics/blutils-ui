@@ -7,9 +7,9 @@ function cellTexts() {
 }
 
 describe("ResultsPaginationStats", () => {
-  test("Table view reads 'N in M pages'", () => {
+  test("Table view reads 'N records'", () => {
     render(<ResultsPaginationStats total={42} groups={5} groupedBy={ViewType.Table} />);
-    expect(cellTexts()).toEqual(["42", "in", "5", "pages"]);
+    expect(cellTexts()).toEqual(["42", "records"]);
   });
 
   test.each([ViewType.GroupedBySubject, ViewType.GroupedByTaxonomy])(
@@ -22,6 +22,6 @@ describe("ResultsPaginationStats", () => {
 
   test("renders zero totals", () => {
     render(<ResultsPaginationStats total={0} groups={0} groupedBy={ViewType.Table} />);
-    expect(cellTexts()).toEqual(["0", "in", "0", "pages"]);
+    expect(cellTexts()).toEqual(["0", "records"]);
   });
 });

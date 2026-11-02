@@ -3,7 +3,6 @@ import { render } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { ConsensusBean, Result, Taxon } from "@/types/BlutilsResult";
 
-export { triggerIntersection, MockIntersectionObserver } from "./intersection-observer";
 
 export function renderWithRouter(ui: ReactElement, { route = "/" } = {}) {
   return render(<MemoryRouter initialEntries={[route]} useTransitions={false}>{ui}</MemoryRouter>);

@@ -3,17 +3,24 @@ import type { CustomFlowbiteTheme } from "flowbite-react";
 /**
  * Lepista Bioinformatics Lab theme overrides for flowbite-react.
  *
- * The violet lab identity (`brand`) is the primary interactive color, which
- * harmonizes across both light and dark themes. The Bioinformatics group amber
- * (`science`, #FEB326) is kept as a sparing accent (the "Active research" badge)
- * rather than a dominant fill. Every button in this app uses flowbite's default
- * `info` color, so remapping `info` to the brand palette retints all primary
- * controls at once, replacing the flowbite default cyan.
+ * The result viewer is deliberately neutral: controls, navigation and
+ * selectors use grays, so color is left to what carries meaning in the data
+ * (the rule word and the composition bar). Every primary button uses
+ * flowbite's default `info` color, so remapping `info` retints them all; the
+ * navbar's active link is remapped from flowbite's cyan for the same reason.
  */
 export const lepistaTheme: CustomFlowbiteTheme = {
   button: {
     color: {
-      info: "text-white bg-brand-600 border border-transparent enabled:hover:bg-brand-700 focus:ring-4 focus:ring-brand-300 dark:bg-brand-600 dark:enabled:hover:bg-brand-700 dark:focus:ring-brand-900",
+      info: "text-white bg-gray-800 border border-transparent enabled:hover:bg-gray-700 focus:ring-4 focus:ring-gray-300 dark:bg-gray-200 dark:text-gray-900 dark:enabled:hover:bg-white dark:focus:ring-gray-600",
+    },
+  },
+  navbar: {
+    link: {
+      active: {
+        on: "bg-gray-100 text-gray-900 font-semibold dark:bg-gray-700 dark:text-white md:bg-transparent md:dark:bg-transparent",
+        off: "border-b border-gray-100 text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white md:border-0 md:hover:bg-transparent md:dark:hover:bg-transparent",
+      },
     },
   },
 };

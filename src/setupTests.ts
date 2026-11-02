@@ -4,7 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 import { TextDecoder, TextEncoder } from 'util';
-import { MockIntersectionObserver } from './test-utils/intersection-observer';
+import { TEST_ROW_HEIGHT, TEST_VIEWPORT } from './test-utils/virtual';
 
 // jsdom 16 does not expose TextEncoder/TextDecoder, which react-router v7
 // needs at import time.
@@ -25,10 +25,32 @@ if (!Blob.prototype.text) {
   };
 }
 
-beforeEach(() => {
-  MockIntersectionObserver.instances = [];
-  window.IntersectionObserver = MockIntersectionObserver;
+// jsdom has no layout: every element measures 0, so @tanstack/react-virtual
+// would render no rows. Give scroll containers a viewport and give measured
+// virtual items (`data-index`) a fixed row height, so windowing really happens.
+Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
+  configurable: true,
+  get() {
+    return TEST_VIEWPORT.height;
+  },
+});
+Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+  configurable: true,
+  get() {
+    return TEST_VIEWPORT.width;
+  },
+});
 
+// @tanstack/virtual-core measures items with `offsetHeight` when no
+// ResizeObserver entry is available (always the case in jsdom).
+Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+  configurable: true,
+  get(this: HTMLElement) {
+    return this.hasAttribute('data-index') ? TEST_ROW_HEIGHT : 0;
+  },
+});
+
+beforeEach(() => {
   Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
     value: { writeText: jest.fn().mockResolvedValue(undefined) },

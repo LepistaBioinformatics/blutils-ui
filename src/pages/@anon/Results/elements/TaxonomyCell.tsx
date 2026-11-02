@@ -35,12 +35,14 @@ export function TaxonomyCell({ taxonomy, className }: Props) {
   );
 }
 
-function translateRank(rank: string) {
+export function translateRank(rank: string) {
   switch (rank) {
     case "superkingdom":
       return "kingdom";
     case "d":
       return "domain";
+    case "k":
+      return "kingdom";
     case "p":
       return "phylum";
     case "c":
