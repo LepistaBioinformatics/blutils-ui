@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/blutils-ui/static/css/main.954412c8.css",
-    "main.js": "/blutils-ui/static/js/main.65a2c9b0.js",
+    "main.css": "/blutils-ui/static/css/main.649f5d27.css",
+    "main.js": "/blutils-ui/static/js/main.2213d08a.js",
     "static/js/489.a74e6e1f.chunk.js": "/blutils-ui/static/js/489.a74e6e1f.chunk.js",
     "static/js/453.8706bd19.chunk.js": "/blutils-ui/static/js/453.8706bd19.chunk.js",
-    "static/js/687.63aaab8d.chunk.js": "/blutils-ui/static/js/687.63aaab8d.chunk.js",
+    "static/js/687.88555c66.chunk.js": "/blutils-ui/static/js/687.88555c66.chunk.js",
     "index.html": "/blutils-ui/index.html",
-    "main.954412c8.css.map": "/blutils-ui/static/css/main.954412c8.css.map",
-    "main.65a2c9b0.js.map": "/blutils-ui/static/js/main.65a2c9b0.js.map",
+    "main.649f5d27.css.map": "/blutils-ui/static/css/main.649f5d27.css.map",
+    "main.2213d08a.js.map": "/blutils-ui/static/js/main.2213d08a.js.map",
     "489.a74e6e1f.chunk.js.map": "/blutils-ui/static/js/489.a74e6e1f.chunk.js.map",
     "453.8706bd19.chunk.js.map": "/blutils-ui/static/js/453.8706bd19.chunk.js.map",
-    "687.63aaab8d.chunk.js.map": "/blutils-ui/static/js/687.63aaab8d.chunk.js.map"
+    "687.88555c66.chunk.js.map": "/blutils-ui/static/js/687.88555c66.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.954412c8.css",
-    "static/js/main.65a2c9b0.js"
+    "static/css/main.649f5d27.css",
+    "static/js/main.2213d08a.js"
   ]
 }
