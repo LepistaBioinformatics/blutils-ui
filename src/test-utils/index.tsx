@@ -6,7 +6,7 @@ import { ConsensusBean, Result, Taxon } from "@/types/BlutilsResult";
 export { triggerIntersection, MockIntersectionObserver } from "./intersection-observer";
 
 export function renderWithRouter(ui: ReactElement, { route = "/" } = {}) {
-  return render(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>);
+  return render(<MemoryRouter initialEntries={[route]} useTransitions={false}>{ui}</MemoryRouter>);
 }
 
 export function makeBean(overrides: Partial<ConsensusBean> = {}): ConsensusBean {

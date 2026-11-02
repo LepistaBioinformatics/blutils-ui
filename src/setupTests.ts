@@ -3,7 +3,12 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+import { TextDecoder, TextEncoder } from 'util';
 import { MockIntersectionObserver } from './test-utils/intersection-observer';
+
+// jsdom 16 does not expose TextEncoder/TextDecoder, which react-router v7
+// needs at import time.
+Object.assign(globalThis, { TextEncoder, TextDecoder });
 
 // jsdom 16 lacks the browser APIs below. CRA runs Jest with `resetMocks: true`,
 // so mock implementations are (re)installed before every test.
